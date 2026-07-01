@@ -273,6 +273,7 @@ export default function Page() {
   const [offsets, setOffsets] = useState<Record<string, number>>({});
   const [wrongKey, setWrongKey] = useState<string | null>(null);
   const [shakeId, setShakeId] = useState(0);
+  const [listening, setListening] = useState(false);
 
   useEffect(() => {
     const urls = new Set<string>();
@@ -291,32 +292,56 @@ export default function Page() {
     () => activeVersions.filter((v) => getCut(v, activeCut)),
     [activeVersions, activeCut]
   );
+  const fullVersions = useMemo(() => dbVersions.filter((v) => v.full), []);
+  const panelVersions = useMemo(
+    () =>
+      listening && !round
+        ? fullVersions
+        : done
+          ? revealVersions
+          : targetVersion
+            ? [targetVersion]
+            : [],
+    [listening, round, fullVersions, done, revealVersions, targetVersion]
+  );
+  const panelCut = listening && !round ? 'full' : activeCut;
 
   const compareStart = done && round ? round.startPosition : 0;
   const compareEnd = done && round ? round.startPosition + game.revealDuration : null;
 
   const baseOffset = useCallback(
     (key: string) => {
-      const v = activeVersions.find((x) => x.key === key);
-      return (v && getCut(v, activeCut)?.offsetMs) ?? 0;
+      const v = panelVersions.find((x) => x.key === key);
+      return (v && getCut(v, panelCut)?.offsetMs) ?? 0;
     },
-    [activeVersions, activeCut]
+    [panelVersions, panelCut]
   );
 
   const tracks = useMemo(() => {
-    const src = done ? revealVersions : targetVersion ? [targetVersion] : [];
-    return src
+    return panelVersions
       .map((v) => {
-        const c = getCut(v, activeCut);
+        const c = getCut(v, panelCut);
         return c ? { key: v.key, url: cutUrl(c), offsetMs: offsets[v.key] ?? c.offsetMs } : null;
       })
       .filter((x): x is { key: string; url: string; offsetMs: number } => x != null);
-  }, [done, revealVersions, targetVersion, activeCut, offsets]);
+  }, [panelVersions, panelCut, offsets]);
   const order = useMemo(() => tracks.map((t) => t.key), [tracks]);
 
-  const initialActive = round?.targetKey ?? order[0] ?? '';
+  const initialActive = listening && !round ? 'original' : (round?.targetKey ?? order[0] ?? '');
   const player = useSyncedPlayer(tracks, order, initialActive);
-  const { state, loading, error, toggle, seek, switchTo, setClip, pause, play, setVolume } = player;
+  const {
+    state,
+    loading,
+    error,
+    toggle,
+    seek,
+    switchTo,
+    setClip,
+    clearClip,
+    pause,
+    play,
+    setVolume
+  } = player;
 
   const playPendingRef = useRef(false);
 
@@ -376,9 +401,15 @@ export default function Page() {
     seek(compareStart);
   }, [done, targetLoaded, compareStart, compareEnd, setClip, seek]);
 
+  useEffect(() => {
+    if (!listening || round || loading) return;
+    clearClip();
+  }, [listening, round, loading, clearClip]);
+
   const startRound = useCallback(
     (daily: boolean) => {
       pause();
+      setListening(false);
       setOffsets({});
       setWrongKey(null);
       playPendingRef.current = true;
@@ -521,6 +552,17 @@ export default function Page() {
             <button type="button" onClick={() => startRound(true)} className={ghostBtn}>
               {t('dreamBelievers.playDaily')}
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                pause();
+                setOffsets({});
+                setListening((v) => !v);
+              }}
+              className={ghostBtn}
+            >
+              {t(listening ? 'dreamBelievers.closeFullListen' : 'dreamBelievers.listenFull')}
+            </button>
           </HStack>
 
           <HStack
@@ -589,6 +631,37 @@ export default function Page() {
               </Stack>
             ))}
           </HStack>
+
+          {listening && (
+            <Stack className="db-glass" gap={3} borderRadius="2xl" w="full" maxW="42rem" p={5}>
+              <Box
+                color="fg.default"
+                fontFamily="display"
+                fontSize="sm"
+                fontWeight="700"
+                textAlign="center"
+              >
+                {t('dreamBelievers.fullListenTitle')}
+              </Box>
+              <SyncedPlayerPanel
+                versions={fullVersions}
+                cut="full"
+                locale={locale}
+                t={tp}
+                state={state}
+                loading={loading}
+                error={error}
+                toggle={toggle}
+                seek={seek}
+                switchTo={switchTo}
+                offsets={offsets}
+                onOffset={onOffset}
+                allowSwitch
+                showOffset={false}
+              />
+              <HStack justifyContent="center">{volumeControl}</HStack>
+            </Stack>
+          )}
         </Stack>
       )}
 

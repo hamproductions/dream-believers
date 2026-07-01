@@ -8,15 +8,9 @@ import {
   type SyncGroup,
   type Version
 } from '~/utils/dream-believers/data';
-import { bakedSections } from '~/utils/dream-believers/sections';
-
-// Instrumental sections carry no vocal, so they can't distinguish a version.
-const INSTRUMENTAL = new Set(['イントロ', '間奏', 'アウトロ']);
 
 export const REVEAL_STEPS = [1, 2, 4, 7, 11] as const;
 export const MAX_ATTEMPTS = REVEAL_STEPS.length;
-
-export type RoundSet = { syncGroup: SyncGroup; cut: CutName };
 
 export interface DbStats {
   played: number;
@@ -36,6 +30,44 @@ export interface DbRound {
   guesses: string[];
   status: 'playing' | 'won' | 'lost';
 }
+
+interface VocalWindow {
+  start: number;
+  end: number;
+  label: string;
+}
+
+const GROUP_FULL_WINDOWS: VocalWindow[] = [
+  { start: 111.2, end: 133.4, label: 'Aメロ2' },
+  { start: 136.4, end: 157.1, label: 'Bメロ2' },
+  { start: 190.8, end: 222.2, label: 'Cメロ' }
+];
+
+const SAKURA_FULL_WINDOWS: VocalWindow[] = [
+  { start: 110.4, end: 131.9, label: 'Aメロ2' },
+  { start: 134.4, end: 153.8, label: 'Bメロ2' },
+  { start: 187.6, end: 219.2, label: 'Cメロ' }
+];
+
+const VOCAL_WINDOWS: Record<string, VocalWindow[]> = {
+  original: GROUP_FULL_WINDOWS,
+  '4nin': [{ start: 40.8, end: 72.2, label: 'Aメロ/Bメロ' }],
+  '104': GROUP_FULL_WINDOWS,
+  '105': [
+    { start: 111.4, end: 131.5, label: 'Aメロ2' },
+    { start: 136.5, end: 156.8, label: 'Bメロ2' },
+    { start: 190.6, end: 222.0, label: 'Cメロ' }
+  ],
+  bgp: GROUP_FULL_WINDOWS,
+  aikatsu: GROUP_FULL_WINDOWS,
+  sakura: SAKURA_FULL_WINDOWS,
+  'sakura-kaho': SAKURA_FULL_WINDOWS,
+  'sakura-sayaka': SAKURA_FULL_WINDOWS,
+  'sakura-kozue': SAKURA_FULL_WINDOWS,
+  'sakura-tsuzuri': SAKURA_FULL_WINDOWS,
+  'sakura-rurino': SAKURA_FULL_WINDOWS,
+  'sakura-megumi': SAKURA_FULL_WINDOWS
+};
 
 const EMPTY_STATS: DbStats = {
   played: 0,
@@ -80,24 +112,17 @@ function buildRound({ pool, rng, approxDuration }: BuildRoundArgs): DbRound {
   const target = pool[Math.floor(rng() * pool.length)];
   const { name: targetCut } = primaryCut(target);
 
-  // Always drop INSIDE a vocal section (not on its boundary, which catches the
-  // instrumental lead-in). We pick a point a little past the section start and
-  // before it ends, so the clip is singing from the first moment.
-  const secs = bakedSections(`standard:${targetCut}`);
-  const idxVocal = secs.map((s, i) => ({ s, i })).filter(({ s }) => !INSTRUMENTAL.has(s.label));
+  const windows = VOCAL_WINDOWS[target.key] ?? [];
   let startPosition: number;
   let sectionLabel: string | null = null;
-  if (idxVocal.length > 0) {
-    const pick = idxVocal[Math.floor(rng() * idxVocal.length)];
-    const secStart = pick.s.t;
-    const next = secs[pick.i + 1];
-    const secEnd = next ? next.t : secStart + 8;
-    const lead = 0.6; // skip the section's instrumental pickup
-    const tail = 1.6; // leave room so the clip stays within the vocal
-    const lo = secStart + lead;
-    const hi = Math.max(lo, secEnd - tail);
+  if (windows.length > 0) {
+    const pick = windows[Math.floor(rng() * windows.length)];
+    const longestReveal = REVEAL_STEPS.at(-1)!;
+    const span = pick.end - pick.start;
+    const lo = pick.start + 0.5;
+    const hi = Math.max(lo, Math.min(pick.start + span * 0.35, pick.end - longestReveal - 2));
     startPosition = lo + rng() * (hi - lo);
-    sectionLabel = pick.s.label;
+    sectionLabel = pick.label;
   } else {
     const usable = Math.max(approxDuration - 15, 5);
     startPosition = Math.min(5 + rng() * (usable - 5), usable);
