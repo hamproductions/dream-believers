@@ -1,6 +1,5 @@
 import { Component, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { AdaptiveDpr, PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import { analyserBus } from '~/utils/dream-believers/analyserBus';
@@ -101,22 +100,12 @@ function readAudio(analyser: AnalyserNode, buf: Uint8Array) {
   };
 }
 
-function PetalField({
-  count,
-  dark,
-  calm,
-  bloomRef
-}: {
-  count: number;
-  dark: boolean;
-  calm: boolean;
-  bloomRef: React.MutableRefObject<{ intensity: number } | null>;
-}) {
+function PetalField({ count, dark, calm }: { count: number; dark: boolean; calm: boolean }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const tex = useMemo(() => petalTexture(), []);
   const petals = useMemo(() => makePetals(count, mulberry32(0x9e3779b9)), [count]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const audioBuf = useMemo(() => new Uint8Array(512), []);
+  const audioBuf = useMemo(() => new Uint8Array(128), []);
   const energy = useRef(0);
 
   const colorArray = useMemo(() => {
@@ -177,11 +166,6 @@ function PetalField({
       mesh.setMatrixAt(i, dummy.matrix);
     }
     mesh.instanceMatrix.needsUpdate = true;
-
-    if (bloomRef.current) {
-      const target = (dark ? 0.9 : 0.6) + e * 2.4 + a.bass * 0.6;
-      bloomRef.current.intensity += (target - bloomRef.current.intensity) * Math.min(1, dt * 5);
-    }
   });
 
   return (
@@ -203,11 +187,8 @@ function PetalField({
 function Scene({ dark, calm }: { dark: boolean; calm: boolean }) {
   const { size } = useThree();
   const [tier, setTier] = useState(1);
-  const bloomRef = useRef<{ intensity: number } | null>(null);
   const isMobile = size.width < 640;
-  // Far fewer petals than before — the loop composes a matrix per petal each
-  // frame, so count is the main CPU cost. Bloom + DPR are the GPU cost.
-  const base = isMobile ? 130 : 380;
+  const base = isMobile ? 72 : 160;
   const count = Math.round(base * tier);
 
   return (
@@ -217,22 +198,8 @@ function Scene({ dark, calm }: { dark: boolean; calm: boolean }) {
         onIncline={() => setTier((t) => Math.min(1, t + 0.15))}
       />
       <AdaptiveDpr pixelated />
-      <ambientLight intensity={1.4} />
-      <PetalField count={count} dark={dark} calm={calm} bloomRef={bloomRef} />
-      {/* Bloom props are CONSTANT (no theme dependency) so a theme change never
-          reconciles/​remounts the postprocessing pipeline — that was causing a
-          WebGL context-loss + crash on every toggle. Theme brightness is driven
-          per-frame through bloomRef.intensity, and colour through petal tints. */}
-      <EffectComposer>
-        <Bloom
-          ref={bloomRef as never}
-          intensity={0.85}
-          luminanceThreshold={0.3}
-          luminanceSmoothing={0.85}
-          mipmapBlur
-          resolutionScale={0.5}
-        />
-      </EffectComposer>
+      <ambientLight intensity={1.2} />
+      <PetalField count={count} dark={dark} calm={calm} />
     </>
   );
 }
@@ -272,8 +239,8 @@ function usePrefersReducedMotion(): boolean {
 }
 
 /**
- * Contains any WebGL / postprocessing failure so it can NEVER take down the app
- * or reach Sentry (whose serializer chokes on the circular Three object graph).
+ * Contains any WebGL failure so it can NEVER take down the app
+ * or reach Sentry.
  * On error we silently render nothing — the CSS bloom in +Layout is the fallback.
  */
 class CanvasBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -297,9 +264,9 @@ export function StageCanvas({ dark }: { dark: boolean }) {
         {/* ONE persistent Canvas — never keyed on theme, so the WebGL context is
             never lost/recreated on a toggle. */}
         <Canvas
-          gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+          gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
           camera={{ position: [0, 0, 12], fov: 60 }}
-          dpr={[1, 1.35]}
+          dpr={[0.75, 1]}
           style={{ background: 'transparent' }}
         >
           <Scene dark={dark} calm={calm} />

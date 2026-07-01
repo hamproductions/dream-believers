@@ -6,9 +6,7 @@ import { LanguageToggle } from '~/components/layout/LanguageToggle';
 import { StageCanvas, useStage3DActive } from '~/components/dream-believers/StageCanvas';
 import { useColorModeContext } from '~/context/ColorModeContext';
 
-// Deterministic petal parameters (coprime spreads) — the CSS fallback field for
-// reduced-motion / no-WebGL. When the 3D stage is active this is not rendered.
-const PETALS = Array.from({ length: 30 }, (_, i) => {
+const PETALS = Array.from({ length: 16 }, (_, i) => {
   const h1 = (i * 73) % 101;
   const h2 = (i * 37) % 89;
   const h3 = (i * 53) % 97;
@@ -36,7 +34,6 @@ function SakuraField() {
             height: `${p.size}px`,
             animationDuration: `${p.dur}s`,
             animationDelay: `${p.delay}s`,
-            filter: p.tier === 0 ? 'blur(1px)' : undefined,
             // @ts-expect-error CSS custom properties
             '--sway': `${p.sway}vw`,
             '--spin': `${p.spin}deg`,
@@ -55,11 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <Stack position="relative" gap={0} w="full" minH="100dvh">
-      <div className="db-backdrop" aria-hidden>
-        <span className="db-orb db-orb-1" />
-        <span className="db-orb db-orb-2" />
-        <span className="db-orb db-orb-3" />
-      </div>
+      <div className="db-backdrop" aria-hidden />
       {stage3d ? <StageCanvas dark={dark} /> : <SakuraField />}
 
       <Container zIndex="1" position="relative" flex={1} w="full" py={4} px={4}>

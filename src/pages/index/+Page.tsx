@@ -14,11 +14,9 @@ import {
   dbVersions,
   getCut,
   jacketUrl,
-  primaryCut,
   versionLabel,
   type Locale
 } from '~/utils/dream-believers/data';
-import { preloadClips } from '~/utils/dream-believers/SyncedVersionPlayer';
 import { getPicUrl } from '~/utils/assets';
 
 const GOLD = '#f8b500';
@@ -274,15 +272,7 @@ export default function Page() {
   const [wrongKey, setWrongKey] = useState<string | null>(null);
   const [shakeId, setShakeId] = useState(0);
   const [listening, setListening] = useState(false);
-
-  useEffect(() => {
-    const urls = new Set<string>();
-    for (const v of dbVersions) {
-      const cut = primaryCut(v).cut;
-      if (cut) urls.add(cutUrl(cut));
-    }
-    preloadClips([...urls]);
-  }, []);
+  const [listenKey, setListenKey] = useState('original');
 
   const done = round?.status === 'won' || round?.status === 'lost';
   const targetVersion = round ? activeVersions.find((v) => v.key === round.targetKey) : undefined;
@@ -293,16 +283,19 @@ export default function Page() {
     [activeVersions, activeCut]
   );
   const fullVersions = useMemo(() => dbVersions.filter((v) => v.full), []);
+  const listenerVersion = fullVersions.find((v) => v.key === listenKey) ?? fullVersions[0];
   const panelVersions = useMemo(
     () =>
       listening && !round
-        ? fullVersions
+        ? listenerVersion
+          ? [listenerVersion]
+          : []
         : done
           ? revealVersions
           : targetVersion
             ? [targetVersion]
             : [],
-    [listening, round, fullVersions, done, revealVersions, targetVersion]
+    [listening, round, listenerVersion, done, revealVersions, targetVersion]
   );
   const panelCut = listening && !round ? 'full' : activeCut;
 
@@ -327,7 +320,7 @@ export default function Page() {
   }, [panelVersions, panelCut, offsets]);
   const order = useMemo(() => tracks.map((t) => t.key), [tracks]);
 
-  const initialActive = listening && !round ? 'original' : (round?.targetKey ?? order[0] ?? '');
+  const initialActive = listening && !round ? listenKey : (round?.targetKey ?? order[0] ?? '');
   const player = useSyncedPlayer(tracks, order, initialActive);
   const {
     state,
@@ -582,6 +575,7 @@ export default function Page() {
                 pause();
                 setOffsets({});
                 setListening((v) => !v);
+                setListenKey('original');
               }}
               className={ghostBtn}
             >
@@ -695,8 +689,42 @@ export default function Page() {
               >
                 {t('dreamBelievers.fullListenTitle')}
               </Box>
+              <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
+                {fullVersions.map((v) => {
+                  const active = v.key === listenKey;
+                  return (
+                    <button
+                      key={v.key}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        pause();
+                        setListenKey(v.key);
+                      }}
+                      className={css({
+                        cursor: 'pointer',
+                        borderColor: active ? 'accent.default' : 'border.default',
+                        borderRadius: 'lg',
+                        borderWidth: '1px',
+                        minH: '42px',
+                        py: '2',
+                        px: '3',
+                        color: active ? 'white' : 'fg.default',
+                        fontSize: 'sm',
+                        fontWeight: '700',
+                        bg: active ? 'accent.default' : 'transparent',
+                        transition: 'transform 0.12s, background 0.2s, border-color 0.2s',
+                        _active: { transform: 'translateY(1px)' },
+                        _hover: { borderColor: 'accent.default' }
+                      })}
+                    >
+                      {versionLabel(v, locale)}
+                    </button>
+                  );
+                })}
+              </Grid>
               <SyncedPlayerPanel
-                versions={fullVersions}
+                versions={listenerVersion ? [listenerVersion] : []}
                 cut="full"
                 locale={locale}
                 t={tp}
@@ -708,7 +736,7 @@ export default function Page() {
                 switchTo={switchTo}
                 offsets={offsets}
                 onOffset={onOffset}
-                allowSwitch
+                allowSwitch={false}
                 showOffset={false}
               />
               <HStack justifyContent="center">{volumeControl}</HStack>
