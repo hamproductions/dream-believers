@@ -18,6 +18,7 @@ export interface SyncedPlayerState {
   duration: number;
   activeKey: string;
   loadedKeys: string[];
+  availableKeys: string[];
 }
 
 const RAMP = 0.03;
@@ -89,7 +90,8 @@ export class SyncedVersionPlayer {
       position: this.position(),
       duration: this.duration(),
       activeKey: this.activeKey,
-      loadedKeys: [...this.tracks.keys()]
+      loadedKeys: [...this.tracks.keys()],
+      availableKeys: this.availableAt(this.position())
     };
   }
 
@@ -125,10 +127,22 @@ export class SyncedVersionPlayer {
     return this.volume;
   }
 
+  // Timeline spans the longest playable track. A track is audible while its
+  // read head (position + offset) sits inside its own buffer; outside that it
+  // simply stays silent instead of clamping the shared timeline.
   duration(): number {
-    let min = Infinity;
-    for (const t of this.tracks.values()) min = Math.min(min, t.buffer.duration - t.offsetSec);
-    return Number.isFinite(min) ? min : 0;
+    let max = 0;
+    for (const t of this.tracks.values()) max = Math.max(max, t.buffer.duration - t.offsetSec);
+    return max;
+  }
+
+  availableAt(position: number): string[] {
+    const keys: string[] = [];
+    for (const t of this.tracks.values()) {
+      const readAt = position + t.offsetSec;
+      if (readAt >= 0 && readAt < t.buffer.duration) keys.push(t.key);
+    }
+    return keys;
   }
 
   position(): number {

@@ -11,7 +11,8 @@ const EMPTY: SyncedPlayerState = {
   position: 0,
   duration: 0,
   activeKey: '',
-  loadedKeys: []
+  loadedKeys: [],
+  availableKeys: []
 };
 
 export function useSyncedPlayer(tracks: SyncedTrack[], order: string[], activeKey: string) {

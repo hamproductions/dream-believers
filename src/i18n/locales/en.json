@@ -401,9 +401,15 @@
     },
     "playEndless": "Play",
     "playDaily": "Daily",
-    "listenFull": "Full song",
-    "closeFullListen": "Close listener",
-    "fullListenTitle": "Full song",
+    "playerMode": "Player",
+    "back": "Back",
+    "nowPlayingVersion": "Now playing",
+    "versionUnavailableHere": "No audio at this point",
+    "group": {
+      "standard": "Standard arrangement",
+      "sakura": "SAKURA (ballad)",
+      "cover": "Collab"
+    },
     "mode": {
       "normal": "Normal",
       "hard": "Hard"

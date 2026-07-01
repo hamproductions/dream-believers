@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaPause, FaPlay, FaShareNodes, FaVolumeHigh, FaXmark } from 'react-icons/fa6';
+import { FaPlay, FaShareNodes, FaVolumeHigh, FaXmark } from 'react-icons/fa6';
 import { Box, Grid, HStack, Stack } from 'styled-system/jsx';
 import { css } from 'styled-system/css';
 import { Metadata } from '~/components/layout/Metadata';
-import { SyncedPlayerPanel } from '~/components/dream-believers/SyncedPlayerPanel';
+import { PlayerMode } from '~/components/dream-believers/PlayerMode';
+import { RecordDisc } from '~/components/dream-believers/RecordDisc';
 import { useToaster } from '~/context/ToasterContext';
 import { useDreamBelieversGame } from '~/hooks/useDreamBelieversGame';
 import { useSyncedPlayer } from '~/hooks/useSyncedPlayer';
 import {
   cutUrl,
   dbSong,
-  dbVersions,
   getCut,
   jacketUrl,
   versionLabel,
@@ -32,80 +32,6 @@ function Wordmark() {
       lineHeight="0.9"
     >
       Dream Believers
-    </Box>
-  );
-}
-
-function RecordDisc({
-  art,
-  mystery,
-  playing,
-  progress,
-  color,
-  onToggle,
-  spinIdle,
-  playLabel,
-  pauseLabel
-}: {
-  art?: string | null;
-  mystery?: boolean;
-  playing: boolean;
-  progress?: number;
-  color: string;
-  onToggle?: () => void;
-  spinIdle?: boolean;
-  playLabel?: string;
-  pauseLabel?: string;
-}) {
-  const spinning = playing || spinIdle;
-  return (
-    <Box position="relative" w={{ base: '232px', sm: '288px' }} h={{ base: '232px', sm: '288px' }}>
-      <Box className="db-bloom" />
-      <Box
-        className="db-ring"
-        style={{ ['--p' as string]: `${progress ?? 0}`, ['--rc' as string]: color }}
-      />
-      <Box className="db-disc db-spin" data-paused={!spinning} w="full" h="full">
-        <Box className="db-disc-label">
-          {mystery || !art ? (
-            <div className="db-disc-mystery">♪</div>
-          ) : (
-            <img src={jacketUrl(art)} alt="" width={288} height={288} />
-          )}
-        </Box>
-        <Box className="db-disc-hole" />
-      </Box>
-      {onToggle && (
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={playing ? pauseLabel : playLabel}
-          className={css({
-            cursor: 'pointer',
-            display: 'flex',
-            zIndex: 4,
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderRadius: 'full',
-            w: '72px',
-            h: '72px',
-            color: 'white',
-            transition: 'transform 0.12s',
-            _active: { transform: 'translate(-50%, -50%) scale(0.96)' },
-            _hover: { transform: 'translate(-50%, -50%) scale(1.06)' }
-          })}
-          style={{
-            background: `radial-gradient(circle at 38% 32%, ${color}, ${color}cc)`,
-            boxShadow: `0 12px 30px -8px ${color}, inset 0 1px 0 rgba(255,255,255,0.5)`
-          }}
-        >
-          {playing ? <FaPause size={24} /> : <FaPlay size={24} style={{ marginLeft: 3 }} />}
-        </button>
-      )}
     </Box>
   );
 }
@@ -271,8 +197,7 @@ export default function Page() {
   const [offsets, setOffsets] = useState<Record<string, number>>({});
   const [wrongKey, setWrongKey] = useState<string | null>(null);
   const [shakeId, setShakeId] = useState(0);
-  const [listening, setListening] = useState(false);
-  const [listenKey, setListenKey] = useState('original');
+  const [showPlayer, setShowPlayer] = useState(false);
 
   const done = round?.status === 'won' || round?.status === 'lost';
   const targetVersion = round ? activeVersions.find((v) => v.key === round.targetKey) : undefined;
@@ -282,33 +207,14 @@ export default function Page() {
     () => activeVersions.filter((v) => getCut(v, activeCut)),
     [activeVersions, activeCut]
   );
-  const fullVersions = useMemo(() => dbVersions.filter((v) => v.full), []);
-  const listenerVersion = fullVersions.find((v) => v.key === listenKey) ?? fullVersions[0];
   const panelVersions = useMemo(
-    () =>
-      listening && !round
-        ? listenerVersion
-          ? [listenerVersion]
-          : []
-        : done
-          ? revealVersions
-          : targetVersion
-            ? [targetVersion]
-            : [],
-    [listening, round, listenerVersion, done, revealVersions, targetVersion]
+    () => (done ? revealVersions : targetVersion ? [targetVersion] : []),
+    [done, revealVersions, targetVersion]
   );
-  const panelCut = listening && !round ? 'full' : activeCut;
+  const panelCut = activeCut;
 
   const compareStart = done && round ? round.startPosition : 0;
   const compareEnd = done && round ? round.startPosition + game.revealDuration : null;
-
-  const baseOffset = useCallback(
-    (key: string) => {
-      const v = panelVersions.find((x) => x.key === key);
-      return (v && getCut(v, panelCut)?.offsetMs) ?? 0;
-    },
-    [panelVersions, panelCut]
-  );
 
   const tracks = useMemo(() => {
     return panelVersions
@@ -320,21 +226,9 @@ export default function Page() {
   }, [panelVersions, panelCut, offsets]);
   const order = useMemo(() => tracks.map((t) => t.key), [tracks]);
 
-  const initialActive = listening && !round ? listenKey : (round?.targetKey ?? order[0] ?? '');
+  const initialActive = round?.targetKey ?? order[0] ?? '';
   const player = useSyncedPlayer(tracks, order, initialActive);
-  const {
-    state,
-    loading,
-    error,
-    toggle,
-    seek,
-    switchTo,
-    setClip,
-    clearClip,
-    pause,
-    play,
-    setVolume
-  } = player;
+  const { state, loading, error, toggle, seek, switchTo, setClip, pause, play, setVolume } = player;
 
   const playPendingRef = useRef(false);
 
@@ -377,32 +271,15 @@ export default function Page() {
     play
   ]);
 
-  const onOffset = useCallback(
-    (key: string, delta: number) => {
-      setOffsets((prev) => {
-        const next = (prev[key] ?? baseOffset(key)) + delta;
-        player.setTrackOffset(key, next);
-        return { ...prev, [key]: next };
-      });
-    },
-    [player, baseOffset]
-  );
-
   useEffect(() => {
     if (!done || !targetLoaded || compareEnd == null) return;
     setClip(compareStart, compareEnd);
     seek(compareStart);
   }, [done, targetLoaded, compareStart, compareEnd, setClip, seek]);
 
-  useEffect(() => {
-    if (!listening || round || loading) return;
-    clearClip();
-  }, [listening, round, loading, clearClip]);
-
   const startRound = useCallback(
     (daily: boolean) => {
       pause();
-      setListening(false);
       setOffsets({});
       setWrongKey(null);
       playPendingRef.current = true;
@@ -425,18 +302,6 @@ export default function Page() {
       game.guess(key);
     },
     [round, game, toast, t]
-  );
-
-  const panelToggle = useCallback(
-    (pos?: number) => {
-      if (done && compareEnd != null) {
-        setClip(compareStart, compareEnd);
-        toggle(pos ?? compareStart);
-        return;
-      }
-      toggle(pos);
-    },
-    [done, compareStart, compareEnd, setClip, toggle]
   );
 
   const playSound = useCallback(
@@ -518,7 +383,9 @@ export default function Page() {
           : ''}
       </Box>
 
-      {!round && (
+      {showPlayer && <PlayerMode locale={locale} t={tp} onExit={() => setShowPlayer(false)} />}
+
+      {!round && !showPlayer && (
         <Stack
           className="db-moment"
           key="home"
@@ -574,12 +441,11 @@ export default function Page() {
               onClick={() => {
                 pause();
                 setOffsets({});
-                setListening((v) => !v);
-                setListenKey('original');
+                setShowPlayer(true);
               }}
               className={ghostBtn}
             >
-              {t(listening ? 'dreamBelievers.closeFullListen' : 'dreamBelievers.listenFull')}
+              {t('dreamBelievers.playerMode')}
             </button>
           </HStack>
 
@@ -677,71 +543,6 @@ export default function Page() {
               </Stack>
             ))}
           </HStack>
-
-          {listening && (
-            <Stack className="db-glass" gap={3} borderRadius="2xl" w="full" maxW="42rem" p={5}>
-              <Box
-                color="fg.default"
-                fontFamily="display"
-                fontSize="sm"
-                fontWeight="700"
-                textAlign="center"
-              >
-                {t('dreamBelievers.fullListenTitle')}
-              </Box>
-              <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
-                {fullVersions.map((v) => {
-                  const active = v.key === listenKey;
-                  return (
-                    <button
-                      key={v.key}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => {
-                        pause();
-                        setListenKey(v.key);
-                      }}
-                      className={css({
-                        cursor: 'pointer',
-                        borderColor: active ? 'accent.default' : 'border.default',
-                        borderRadius: 'lg',
-                        borderWidth: '1px',
-                        minH: '42px',
-                        py: '2',
-                        px: '3',
-                        color: active ? 'white' : 'fg.default',
-                        fontSize: 'sm',
-                        fontWeight: '700',
-                        bg: active ? 'accent.default' : 'transparent',
-                        transition: 'transform 0.12s, background 0.2s, border-color 0.2s',
-                        _active: { transform: 'translateY(1px)' },
-                        _hover: { borderColor: 'accent.default' }
-                      })}
-                    >
-                      {versionLabel(v, locale)}
-                    </button>
-                  );
-                })}
-              </Grid>
-              <SyncedPlayerPanel
-                versions={listenerVersion ? [listenerVersion] : []}
-                cut="full"
-                locale={locale}
-                t={tp}
-                state={state}
-                loading={loading}
-                error={error}
-                toggle={panelToggle}
-                seek={seek}
-                switchTo={switchTo}
-                offsets={offsets}
-                onOffset={onOffset}
-                allowSwitch={false}
-                showOffset={false}
-              />
-              <HStack justifyContent="center">{volumeControl}</HStack>
-            </Stack>
-          )}
         </Stack>
       )}
 

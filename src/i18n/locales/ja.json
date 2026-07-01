@@ -332,9 +332,15 @@
     },
     "playEndless": "プレイ",
     "playDaily": "デイリー",
-    "listenFull": "フル尺",
-    "closeFullListen": "閉じる",
-    "fullListenTitle": "フル尺",
+    "playerMode": "プレイヤー",
+    "back": "戻る",
+    "nowPlayingVersion": "再生中",
+    "versionUnavailableHere": "この位置には音源がありません",
+    "group": {
+      "standard": "通常アレンジ",
+      "sakura": "SAKURA（バラード）",
+      "cover": "コラボ"
+    },
     "mode": {
       "normal": "ノーマル",
       "hard": "ハード"
