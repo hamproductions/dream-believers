@@ -826,6 +826,28 @@ export default function Page() {
             )}
           </Stack>
 
+          <HStack className="db-glass" gap={{ base: 6, sm: 8 }} borderRadius="2xl" py={3} px={6}>
+            {[
+              { label: t('dreamBelievers.stats.played'), value: String(game.stats.played) },
+              { label: t('dreamBelievers.stats.winRate'), value: `${winRate}%` },
+              { label: t('dreamBelievers.stats.streak'), value: String(game.stats.streak) }
+            ].map((s) => (
+              <Stack key={s.label} gap={0.5} alignItems="center">
+                <Box color="fg.default" fontFamily="display" fontSize="2xl" fontWeight="700">
+                  {s.value}
+                </Box>
+                <Box
+                  color="fg.subtle"
+                  fontSize="2xs"
+                  letterSpacing="wider"
+                  textTransform="uppercase"
+                >
+                  {s.label}
+                </Box>
+              </Stack>
+            ))}
+          </HStack>
+
           <HStack gap={3} pt={1}>
             <button
               type="button"
