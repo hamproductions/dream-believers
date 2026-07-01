@@ -204,6 +204,8 @@ export function useDreamBelieversGame(approxDuration = 130) {
     [pool, approxDuration, mode]
   );
 
+  const quit = useCallback(() => setRound(null), []);
+
   const recordResult = useCallback(
     (won: boolean, attempt: number) => {
       setStats((prev) => {
@@ -284,6 +286,7 @@ export function useDreamBelieversGame(approxDuration = 130) {
     newRound,
     guess,
     skip,
+    quit,
     stats,
     maxAttempts: MAX_ATTEMPTS
   };

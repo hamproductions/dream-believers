@@ -157,8 +157,8 @@
     {
       "key": "sakura-kaho",
       "label": {
-        "ja": "SAKURA Ver. (花帆)",
-        "en": "SAKURA Ver. (Kaho)"
+        "ja": "花帆 ソロ Ver.",
+        "en": "Kaho Solo Ver."
       },
       "kind": "solo",
       "member": {
@@ -179,8 +179,8 @@
     {
       "key": "sakura-sayaka",
       "label": {
-        "ja": "SAKURA Ver. (さやか)",
-        "en": "SAKURA Ver. (Sayaka)"
+        "ja": "さやか ソロ Ver.",
+        "en": "Sayaka Solo Ver."
       },
       "kind": "solo",
       "member": {
@@ -201,8 +201,8 @@
     {
       "key": "sakura-kozue",
       "label": {
-        "ja": "SAKURA Ver. (梢)",
-        "en": "SAKURA Ver. (Kozue)"
+        "ja": "梢 ソロ Ver.",
+        "en": "Kozue Solo Ver."
       },
       "kind": "solo",
       "member": {
@@ -223,8 +223,8 @@
     {
       "key": "sakura-tsuzuri",
       "label": {
-        "ja": "SAKURA Ver. (綴理)",
-        "en": "SAKURA Ver. (Tsuzuri)"
+        "ja": "綴理 ソロ Ver.",
+        "en": "Tsuzuri Solo Ver."
       },
       "kind": "solo",
       "member": {
@@ -245,8 +245,8 @@
     {
       "key": "sakura-rurino",
       "label": {
-        "ja": "SAKURA Ver. (瑠璃乃)",
-        "en": "SAKURA Ver. (Rurino)"
+        "ja": "瑠璃乃 ソロ Ver.",
+        "en": "Rurino Solo Ver."
       },
       "kind": "solo",
       "member": {
@@ -267,8 +267,8 @@
     {
       "key": "sakura-megumi",
       "label": {
-        "ja": "SAKURA Ver. (慈)",
-        "en": "SAKURA Ver. (Megumi)"
+        "ja": "慈 ソロ Ver.",
+        "en": "Megumi Solo Ver."
       },
       "kind": "solo",
       "member": {

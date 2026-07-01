@@ -119,7 +119,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-kaho',
-    label: { ja: 'SAKURA Ver. (花帆)', en: 'SAKURA Ver. (Kaho)' },
+    label: { ja: '花帆 ソロ Ver.', en: 'Kaho Solo Ver.' },
     kind: 'solo',
     member: { id: '59', ja: '日野下花帆', en: 'Kaho Hinoshita', color: '#f8b500' },
     syncGroup: 'standard',
@@ -133,7 +133,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-sayaka',
-    label: { ja: 'SAKURA Ver. (さやか)', en: 'SAKURA Ver. (Sayaka)' },
+    label: { ja: 'さやか ソロ Ver.', en: 'Sayaka Solo Ver.' },
     kind: 'solo',
     member: { id: '60', ja: '村野さやか', en: 'Sayaka Murano', color: '#5383c3' },
     syncGroup: 'standard',
@@ -147,7 +147,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-kozue',
-    label: { ja: 'SAKURA Ver. (梢)', en: 'SAKURA Ver. (Kozue)' },
+    label: { ja: '梢 ソロ Ver.', en: 'Kozue Solo Ver.' },
     kind: 'solo',
     member: { id: '61', ja: '乙宗 梢', en: 'Kozue Otomune', color: '#68be8d' },
     syncGroup: 'standard',
@@ -160,7 +160,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-tsuzuri',
-    label: { ja: 'SAKURA Ver. (綴理)', en: 'SAKURA Ver. (Tsuzuri)' },
+    label: { ja: '綴理 ソロ Ver.', en: 'Tsuzuri Solo Ver.' },
     kind: 'solo',
     member: { id: '62', ja: '夕霧綴理', en: 'Tsuzuri Yugiri', color: '#ba2636' },
     syncGroup: 'standard',
@@ -173,7 +173,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-rurino',
-    label: { ja: 'SAKURA Ver. (瑠璃乃)', en: 'SAKURA Ver. (Rurino)' },
+    label: { ja: '瑠璃乃 ソロ Ver.', en: 'Rurino Solo Ver.' },
     kind: 'solo',
     member: { id: '63', ja: '大沢瑠璃乃', en: 'Rurino Osawa', color: '#e7609e' },
     syncGroup: 'standard',
@@ -187,7 +187,7 @@ const VERSIONS: Version[] = [
   },
   {
     key: 'sakura-megumi',
-    label: { ja: 'SAKURA Ver. (慈)', en: 'SAKURA Ver. (Megumi)' },
+    label: { ja: '慈 ソロ Ver.', en: 'Megumi Solo Ver.' },
     kind: 'solo',
     member: { id: '64', ja: '藤島 慈', en: 'Megumi Fujishima', color: '#c8c2c6' },
     syncGroup: 'standard',

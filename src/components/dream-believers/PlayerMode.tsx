@@ -51,8 +51,8 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
   const available = useMemo(() => new Set(state.availableKeys), [state.availableKeys]);
   const loaded = useMemo(() => new Set(state.loadedKeys), [state.loadedKeys]);
 
-  const ready = !error && loaded.has(state.activeKey);
-  const stillDecoding = loaded.size < tracks.length;
+  const allLoaded = loaded.size >= tracks.length;
+  const ready = !error && allLoaded;
 
   const sections = useMemo(() => {
     const cluster = state.activeKey.startsWith('sakura') ? 'sakura:full' : 'standard:full';
@@ -148,158 +148,165 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
 
       <Stack gap="1" alignItems="center" minH="3.4em" textAlign="center">
         <Box color="fg.default" fontFamily="display" fontSize="xl" fontWeight="800">
-          {versionLabel(activeVersion, locale)}
+          {ready ? versionLabel(activeVersion, locale) : t('loadingAudio')}
         </Box>
         <Box h="1.2em" color={activeUnavailable ? '#d96b7a' : 'fg.subtle'} fontSize="xs">
           {error
             ? t('audioError')
             : !ready
-              ? t('loadingAudio')
+              ? `${loaded.size} / ${tracks.length}`
               : activeUnavailable
                 ? t('versionUnavailableHere')
                 : `${fmt(state.position)} / ${fmt(duration)}`}
         </Box>
       </Stack>
 
-      <Stack gap="3" w="full" px={{ base: 2, sm: 0 }}>
-        <Box
-          className={ready ? undefined : 'db-shimmer'}
-          role="slider"
-          tabIndex={ready ? 0 : -1}
-          aria-label={t('play')}
-          aria-valuemin={0}
-          aria-valuemax={Math.round(duration)}
-          aria-valuenow={Math.round(state.position)}
-          onClick={ready ? handleSeek : undefined}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowRight') seek(Math.min(state.position + 5, duration));
-            else if (e.key === 'ArrowLeft') seek(Math.max(state.position - 5, 0));
-          }}
-          cursor={ready ? 'pointer' : 'default'}
-          position="relative"
-          borderRadius="full"
-          w="full"
-          h="8px"
-          bg="bg.muted"
-          overflow="hidden"
-        >
-          {ready && (
+      {!ready ? (
+        <Stack gap="3" alignItems="center" w="full" maxW="24rem" px={{ base: 2, sm: 0 }}>
+          <Box className="db-shimmer" borderRadius="full" w="full" h="8px" bg="bg.muted" />
+          <Box color="fg.subtle" fontSize="xs">
+            {error ? t('audioError') : t('loadingAudio')}
+          </Box>
+        </Stack>
+      ) : (
+        <>
+          <Stack gap="3" w="full" px={{ base: 2, sm: 0 }}>
             <Box
-              style={{ width: `${posPct}%`, background: activeColor }}
-              position="absolute"
-              top="0"
-              left="0"
+              className={ready ? undefined : 'db-shimmer'}
+              role="slider"
+              tabIndex={ready ? 0 : -1}
+              aria-label={t('play')}
+              aria-valuemin={0}
+              aria-valuemax={Math.round(duration)}
+              aria-valuenow={Math.round(state.position)}
+              onClick={ready ? handleSeek : undefined}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') seek(Math.min(state.position + 5, duration));
+                else if (e.key === 'ArrowLeft') seek(Math.max(state.position - 5, 0));
+              }}
+              cursor={ready ? 'pointer' : 'default'}
+              position="relative"
               borderRadius="full"
-              h="full"
-            />
-          )}
-        </Box>
-
-        <HStack gap="3" justifyContent="center" alignItems="center">
-          <Box display="flex" color="accent.text">
-            <FaVolumeHigh size={14} />
-          </Box>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={vol}
-            onChange={(e) => setStoredVolume(Number(e.target.value))}
-            aria-label={t('volume')}
-            className={css({ cursor: 'pointer', w: '200px', accentColor: 'accent.default' })}
-          />
-        </HStack>
-      </Stack>
-
-      {sections.length > 0 && (
-        <Wrap gap="2" justifyContent="center">
-          {sections.map((sec) => (
-            <button
-              key={`${sec.label}-${sec.t}`}
-              type="button"
-              disabled={!ready}
-              onClick={() => seek(sec.t)}
-              className={`db-glass ${css({
-                cursor: 'pointer',
-                borderRadius: 'full',
-                py: '1.5',
-                px: '3',
-                color: 'fg.default',
-                fontSize: 'xs',
-                fontWeight: '600',
-                transition: 'transform 0.12s, border-color 0.2s',
-                _disabled: { cursor: 'not-allowed', opacity: 0.5 },
-                _active: { transform: 'translateY(1px)' },
-                _hover: { color: 'accent.text' }
-              })}`}
+              w="full"
+              h="8px"
+              bg="bg.muted"
+              overflow="hidden"
             >
-              {t(`sections.${sec.label}`, { defaultValue: sec.label })}
-            </button>
-          ))}
-        </Wrap>
-      )}
-
-      <Stack gap="2" w="full">
-        {stillDecoding && (
-          <Box color="fg.subtle" fontFamily="mono" fontSize="2xs" textAlign="center">
-            {t('loadingAudio')} {loaded.size}/{tracks.length}
-          </Box>
-        )}
-        <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
-          {fullVersions.map((v, i) => {
-            const active = v.key === state.activeKey;
-            const isLoaded = loaded.has(v.key);
-            const canPlayHere = available.has(v.key);
-            const disabled = !isLoaded || !canPlayHere;
-            const c = v.member?.color ?? ACCENT;
-            return (
-              <button
-                key={v.key}
-                type="button"
-                aria-pressed={active}
-                disabled={disabled}
-                title={!canPlayHere && isLoaded ? t('versionUnavailableHere') : undefined}
-                onClick={() => onPick(v.key)}
-                className={`db-cascade ${!isLoaded ? 'db-shimmer' : ''} ${css({
-                  cursor: 'pointer',
-                  display: 'flex',
-                  position: 'relative',
-                  gap: '2',
-                  alignItems: 'center',
-                  borderColor: active ? 'transparent' : 'border.default',
-                  borderRadius: 'lg',
-                  borderWidth: '1px',
-                  minH: '48px',
-                  py: '2',
-                  pl: '3',
-                  pr: '2.5',
-                  color: active ? 'white' : 'fg.default',
-                  fontSize: 'sm',
-                  fontWeight: '600',
-                  textAlign: 'left',
-                  transition: 'transform 0.12s, background 0.2s, border-color 0.2s, opacity 0.2s',
-                  _disabled: { cursor: 'not-allowed', opacity: 0.42 },
-                  _active: { transform: 'translateY(1px)' },
-                  _hover: { borderColor: active ? 'transparent' : 'accent.default' }
-                })}`}
-                style={{ animationDelay: `${i * 30}ms`, background: active ? c : undefined }}
-              >
-                <span
-                  style={{
-                    flexShrink: 0,
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '9999px',
-                    background: active ? 'rgba(255,255,255,0.9)' : c
-                  }}
+              {ready && (
+                <Box
+                  style={{ width: `${posPct}%`, background: activeColor }}
+                  position="absolute"
+                  top="0"
+                  left="0"
+                  borderRadius="full"
+                  h="full"
                 />
-                <span style={{ flex: 1 }}>{versionLabel(v, locale)}</span>
-              </button>
-            );
-          })}
-        </Grid>
-      </Stack>
+              )}
+            </Box>
+
+            <HStack gap="3" justifyContent="center" alignItems="center">
+              <Box display="flex" color="accent.text">
+                <FaVolumeHigh size={14} />
+              </Box>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={vol}
+                onChange={(e) => setStoredVolume(Number(e.target.value))}
+                aria-label={t('volume')}
+                className={css({ cursor: 'pointer', w: '200px', accentColor: 'accent.default' })}
+              />
+            </HStack>
+          </Stack>
+
+          {sections.length > 0 && (
+            <Wrap gap="2" justifyContent="center">
+              {sections.map((sec) => (
+                <button
+                  key={`${sec.label}-${sec.t}`}
+                  type="button"
+                  disabled={!ready}
+                  onClick={() => seek(sec.t)}
+                  className={`db-glass ${css({
+                    cursor: 'pointer',
+                    borderRadius: 'full',
+                    py: '1.5',
+                    px: '3',
+                    color: 'fg.default',
+                    fontSize: 'xs',
+                    fontWeight: '600',
+                    transition: 'transform 0.12s, border-color 0.2s',
+                    _disabled: { cursor: 'not-allowed', opacity: 0.5 },
+                    _active: { transform: 'translateY(1px)' },
+                    _hover: { color: 'accent.text' }
+                  })}`}
+                >
+                  {t(`sections.${sec.label}`, { defaultValue: sec.label })}
+                </button>
+              ))}
+            </Wrap>
+          )}
+
+          <Stack gap="2" w="full">
+            <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
+              {fullVersions.map((v, i) => {
+                const active = v.key === state.activeKey;
+                const isLoaded = loaded.has(v.key);
+                const canPlayHere = available.has(v.key);
+                const disabled = !isLoaded || !canPlayHere;
+                const c = v.member?.color ?? ACCENT;
+                return (
+                  <button
+                    key={v.key}
+                    type="button"
+                    aria-pressed={active}
+                    disabled={disabled}
+                    title={!canPlayHere && isLoaded ? t('versionUnavailableHere') : undefined}
+                    onClick={() => onPick(v.key)}
+                    className={`db-cascade ${!isLoaded ? 'db-shimmer' : ''} ${css({
+                      cursor: 'pointer',
+                      display: 'flex',
+                      position: 'relative',
+                      gap: '2',
+                      alignItems: 'center',
+                      borderColor: active ? 'transparent' : 'border.default',
+                      borderRadius: 'lg',
+                      borderWidth: '1px',
+                      minH: '48px',
+                      py: '2',
+                      pl: '3',
+                      pr: '2.5',
+                      color: active ? 'white' : 'fg.default',
+                      fontSize: 'sm',
+                      fontWeight: '600',
+                      textAlign: 'left',
+                      transition:
+                        'transform 0.12s, background 0.2s, border-color 0.2s, opacity 0.2s',
+                      _disabled: { cursor: 'not-allowed', opacity: 0.42 },
+                      _active: { transform: 'translateY(1px)' },
+                      _hover: { borderColor: active ? 'transparent' : 'accent.default' }
+                    })}`}
+                    style={{ animationDelay: `${i * 30}ms`, background: active ? c : undefined }}
+                  >
+                    <span
+                      style={{
+                        flexShrink: 0,
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '9999px',
+                        background: active ? 'rgba(255,255,255,0.9)' : c
+                      }}
+                    />
+                    <span style={{ flex: 1 }}>{versionLabel(v, locale)}</span>
+                  </button>
+                );
+              })}
+            </Grid>
+          </Stack>
+        </>
+      )}
     </Stack>
   );
 }

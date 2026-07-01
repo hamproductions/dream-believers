@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaPlay, FaShareNodes, FaVolumeHigh, FaXmark } from 'react-icons/fa6';
+import { FaChevronLeft, FaPlay, FaShareNodes, FaVolumeHigh, FaXmark } from 'react-icons/fa6';
 import { Box, Grid, HStack, Stack } from 'styled-system/jsx';
 import { css } from 'styled-system/css';
 import { Metadata } from '~/components/layout/Metadata';
@@ -192,7 +192,8 @@ export default function Page() {
   const { toast } = useToaster();
 
   const game = useDreamBelieversGame();
-  const { includeSolos, setIncludeSolos, mode, setMode, activeVersions, activeCut, round } = game;
+  const { includeSolos, setIncludeSolos, mode, setMode, activeVersions, activeCut, round, quit } =
+    game;
 
   const [offsets, setOffsets] = useState<Record<string, number>>({});
   const [wrongKey, setWrongKey] = useState<string | null>(null);
@@ -229,6 +230,30 @@ export default function Page() {
   const initialActive = round?.targetKey ?? order[0] ?? '';
   const player = useSyncedPlayer(tracks, order, initialActive);
   const { state, loading, error, toggle, seek, switchTo, setClip, pause, play, setVolume } = player;
+
+  // Player mode and an active round are in-page states, not routes. Wire both to
+  // browser history + Escape so the back button, browser/hardware back, and Esc
+  // all return home the same way instead of trapping the user or leaving the site.
+  const away = showPlayer || !!round;
+  const goHome = useCallback(() => {
+    pause();
+    setShowPlayer(false);
+    quit();
+  }, [pause, quit]);
+  useEffect(() => {
+    if (!away) return;
+    window.history.pushState({ dbAway: true }, '');
+    const onPop = () => goHome();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') window.history.back();
+    };
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [away, goHome]);
 
   const playPendingRef = useRef(false);
 
@@ -364,6 +389,32 @@ export default function Page() {
     </HStack>
   );
 
+  const homeButton = (
+    <HStack justifyContent="flex-start" w="full">
+      <button
+        type="button"
+        onClick={() => window.history.back()}
+        className={`db-glass ${css({
+          cursor: 'pointer',
+          display: 'flex',
+          gap: '2',
+          alignItems: 'center',
+          borderRadius: 'full',
+          py: '2',
+          pl: '3',
+          pr: '4',
+          color: 'fg.default',
+          fontSize: 'sm',
+          fontWeight: '600',
+          transition: 'transform 0.12s',
+          _active: { transform: 'translateY(1px)' }
+        })}`}
+      >
+        <FaChevronLeft size={13} /> {t('dreamBelievers.back')}
+      </button>
+    </HStack>
+  );
+
   return (
     <Stack gap={{ base: 6, sm: 7 }} alignItems="center" w="full" py={{ base: 4, sm: 6 }} px={4}>
       <Metadata title={t('dreamBelievers.metaTitle')} />
@@ -383,7 +434,7 @@ export default function Page() {
           : ''}
       </Box>
 
-      {showPlayer && <PlayerMode locale={locale} t={tp} onExit={() => setShowPlayer(false)} />}
+      {showPlayer && <PlayerMode locale={locale} t={tp} onExit={() => window.history.back()} />}
 
       {!round && !showPlayer && (
         <Stack
@@ -555,6 +606,7 @@ export default function Page() {
           w="full"
           maxW="40rem"
         >
+          {homeButton}
           <PetalMeter
             max={game.maxAttempts}
             guesses={round.guesses}
@@ -676,6 +728,7 @@ export default function Page() {
           w="full"
           maxW="40rem"
         >
+          {homeButton}
           {round.status === 'won' && <WinBurst key={roundKey} color={revealColor} />}
           <Box
             style={{ color: round.status === 'won' ? GOLD : WILT }}
