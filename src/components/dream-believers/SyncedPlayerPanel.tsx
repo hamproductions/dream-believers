@@ -52,6 +52,7 @@ export function SyncedPlayerPanel({
   const duration = state.duration || 1;
   const lower = clipStart;
   const upper = clipEnd ?? duration;
+  const clipped = clipEnd != null;
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -81,7 +82,7 @@ export function SyncedPlayerPanel({
         <button
           type="button"
           disabled={loading}
-          onClick={() => toggle()}
+          onClick={() => toggle(clipped && !state.playing ? lower : undefined)}
           aria-label={state.playing ? t('pause') : t('play')}
           className={css({
             cursor: 'pointer',

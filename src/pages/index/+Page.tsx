@@ -268,7 +268,7 @@ export default function Page() {
   const { toast } = useToaster();
 
   const game = useDreamBelieversGame();
-  const { includeSolos, setIncludeSolos, activeVersions, activeCut, round } = game;
+  const { includeSolos, setIncludeSolos, mode, setMode, activeVersions, activeCut, round } = game;
 
   const [offsets, setOffsets] = useState<Record<string, number>>({});
   const [wrongKey, setWrongKey] = useState<string | null>(null);
@@ -434,6 +434,30 @@ export default function Page() {
     [round, game, toast, t]
   );
 
+  const panelToggle = useCallback(
+    (pos?: number) => {
+      if (done && compareEnd != null) {
+        setClip(compareStart, compareEnd);
+        toggle(pos ?? compareStart);
+        return;
+      }
+      toggle(pos);
+    },
+    [done, compareStart, compareEnd, setClip, toggle]
+  );
+
+  const playSound = useCallback(
+    (key: string) => {
+      if (compareEnd == null) return;
+      pause();
+      setClip(compareStart, compareEnd);
+      switchTo(key);
+      seek(compareStart);
+      void play(compareStart);
+    },
+    [compareStart, compareEnd, pause, play, seek, setClip, switchTo]
+  );
+
   const share = useCallback(() => {
     if (!round) return;
     const solved = round.status === 'won';
@@ -574,6 +598,34 @@ export default function Page() {
             px={5}
             flexWrap="wrap"
           >
+            <HStack gap={1.5}>
+              {(['normal', 'hard'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={mode === m}
+                  onClick={() => setMode(m)}
+                  className={css({
+                    cursor: 'pointer',
+                    borderRadius: 'full',
+                    minH: '36px',
+                    py: '1.5',
+                    px: '3.5',
+                    color: mode === m ? 'white' : 'fg.default',
+                    fontSize: 'xs',
+                    fontWeight: '800',
+                    letterSpacing: 'widest',
+                    textTransform: 'uppercase',
+                    bg: mode === m ? 'accent.default' : 'transparent',
+                    transition: 'background 0.2s, transform 0.12s',
+                    _active: { transform: 'translateY(1px)' }
+                  })}
+                >
+                  {t(`dreamBelievers.mode.${m}`)}
+                </button>
+              ))}
+            </HStack>
+            <Box display={{ base: 'none', sm: 'block' }} w="1px" h="20px" bg="border.default" />
             <HStack gap={2}>
               <Box color="fg.muted" fontSize="sm">
                 {t('dreamBelievers.includeSolos')}
@@ -651,7 +703,7 @@ export default function Page() {
                 state={state}
                 loading={loading}
                 error={error}
-                toggle={toggle}
+                toggle={panelToggle}
                 seek={seek}
                 switchTo={switchTo}
                 offsets={offsets}
@@ -924,7 +976,7 @@ export default function Page() {
               fontWeight="700"
               textAlign="center"
             >
-              {t('dreamBelievers.listenAll')}
+              {t('dreamBelievers.soundboard')}
             </Box>
             <Box color="fg.subtle" fontSize="xs" lineHeight="1.6" textAlign="center">
               {t('dreamBelievers.compareHint')}
@@ -944,24 +996,50 @@ export default function Page() {
               </Box>
             </HStack>
 
-            <SyncedPlayerPanel
-              versions={revealVersions}
-              cut={activeCut}
-              locale={locale}
-              t={tp}
-              state={state}
-              loading={loading}
-              error={error}
-              toggle={toggle}
-              seek={seek}
-              switchTo={switchTo}
-              offsets={offsets}
-              onOffset={onOffset}
-              allowSwitch
-              showOffset={false}
-              clipStart={compareStart}
-              clipEnd={compareEnd}
-            />
+            {error ? (
+              <Box color="#d96b7a" textAlign="center">
+                {t('dreamBelievers.audioError')}
+              </Box>
+            ) : (
+              <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
+                {revealVersions.map((v, i) => {
+                  const active = v.key === state.activeKey && state.playing;
+                  return (
+                    <button
+                      key={v.key}
+                      type="button"
+                      disabled={loading}
+                      onClick={() => playSound(v.key)}
+                      className={`db-cascade ${css({
+                        cursor: 'pointer',
+                        display: 'flex',
+                        gap: '2',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderColor: active ? 'accent.default' : 'border.default',
+                        borderRadius: 'lg',
+                        borderWidth: '1px',
+                        minH: '48px',
+                        py: '2',
+                        px: '3',
+                        color: active ? 'white' : 'fg.default',
+                        fontSize: 'sm',
+                        fontWeight: '700',
+                        bg: active ? 'accent.default' : 'transparent',
+                        transition: 'transform 0.12s, background 0.2s, border-color 0.2s',
+                        _disabled: { cursor: 'not-allowed', opacity: 0.5 },
+                        _active: { transform: 'translateY(1px)' },
+                        _hover: { borderColor: 'accent.default' }
+                      })}`}
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <FaPlay size={12} />
+                      <span>{versionLabel(v, locale)}</span>
+                    </button>
+                  );
+                })}
+              </Grid>
+            )}
             <HStack justifyContent="center">{volumeControl}</HStack>
           </Stack>
         </Stack>

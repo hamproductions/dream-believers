@@ -1,6 +1,6 @@
 {
-  "title": "Dream Believers Guessr",
-  "defaultTitlePrefix": "Dream Believers Guessr",
+  "title": "Dream Believers",
+  "defaultTitlePrefix": "Dream Believers",
   "description": "Guess which version of Dream Believers is playing, then hear every version in sync.",
   "site_name": "Dream Believers Guessr",
   "seiyuu": "Seiyuu",
@@ -389,8 +389,8 @@
     "performanceNotOccurred": "This performance has not occurred yet"
   },
   "dreamBelievers": {
-    "metaTitle": "Dream Believers Guessr",
-    "title": "Dream Believers Guessr",
+    "metaTitle": "Dream Believers",
+    "title": "Dream Believers",
     "subtitle": "A random clip of Hasunosora's {{song}} plays. Guess which version, then hear them all in sync.",
     "roundSet": "Round set",
     "includeSolos": "Include solo versions",
@@ -401,9 +401,13 @@
     },
     "playEndless": "Play",
     "playDaily": "Daily",
-    "listenFull": "Listen full song",
+    "listenFull": "Full song",
     "closeFullListen": "Close listener",
-    "fullListenTitle": "Full-song listener",
+    "fullListenTitle": "Full song",
+    "mode": {
+      "normal": "Normal",
+      "hard": "Hard"
+    },
     "whichVersion": "Which version?",
     "skip": "Skip",
     "wrongToast": "Not that one",
@@ -445,10 +449,11 @@
     "whatIsThis": "Dream Believers is Hasunosora's theme song, with many group, generation and solo versions.",
     "fineTune": "Fine-tune sync",
     "listenAll": "Listen to all",
-    "compareHint": "Hear the same timestamp and same clip length you were guessing, in every version.",
+    "soundboard": "Compare clip",
+    "compareHint": "Tap a version to replay only the exact question clip.",
     "questionClip": "Question clip ({{seconds}}s)",
     "chooseSection": "Choose a section",
-    "shareText": "Dream Believers Guessr {{n}}/{{max}}",
+    "shareText": "Dream Believers {{n}}/{{max}}",
     "shareTags": "",
     "gen": {
       "102・103期": "Gens 102–103",

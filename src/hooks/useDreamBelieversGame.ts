@@ -11,6 +11,7 @@ import {
 
 export const REVEAL_STEPS = [1, 2, 4, 7, 11] as const;
 export const MAX_ATTEMPTS = REVEAL_STEPS.length;
+export type GameMode = 'normal' | 'hard';
 
 export interface DbStats {
   played: number;
@@ -43,15 +44,33 @@ const GROUP_FULL_WINDOWS: VocalWindow[] = [
   { start: 190.8, end: 222.2, label: 'Cメロ' }
 ];
 
+const GROUP_FULL_HARD_WINDOWS: VocalWindow[] = [
+  { start: 25.8, end: 48.2, label: 'Aメロ' },
+  { start: 50.6, end: 72.3, label: 'Bメロ' },
+  { start: 74.2, end: 98.2, label: 'サビ' },
+  ...GROUP_FULL_WINDOWS,
+  { start: 160.2, end: 186.2, label: 'サビ2' },
+  { start: 229.0, end: 271.0, label: '大サビ' }
+];
+
 const SAKURA_FULL_WINDOWS: VocalWindow[] = [
   { start: 110.4, end: 131.9, label: 'Aメロ2' },
   { start: 134.4, end: 153.8, label: 'Bメロ2' },
   { start: 187.6, end: 219.2, label: 'Cメロ' }
 ];
 
-const VOCAL_WINDOWS: Record<string, VocalWindow[]> = {
+const SAKURA_FULL_HARD_WINDOWS: VocalWindow[] = [
+  { start: 25.8, end: 47.2, label: 'Aメロ' },
+  { start: 49.0, end: 69.8, label: 'Bメロ' },
+  { start: 71.8, end: 96.0, label: 'サビ' },
+  ...SAKURA_FULL_WINDOWS,
+  { start: 155.8, end: 182.6, label: 'サビ2' },
+  { start: 226.4, end: 267.0, label: '大サビ' }
+];
+
+const NORMAL_WINDOWS: Record<string, VocalWindow[]> = {
   original: GROUP_FULL_WINDOWS,
-  '4nin': [{ start: 40.8, end: 72.2, label: 'Aメロ/Bメロ' }],
+  '4nin': [{ start: 52.0, end: 72.2, label: 'Bメロ' }],
   '104': GROUP_FULL_WINDOWS,
   '105': [
     { start: 111.4, end: 131.5, label: 'Aメロ2' },
@@ -67,6 +86,25 @@ const VOCAL_WINDOWS: Record<string, VocalWindow[]> = {
   'sakura-tsuzuri': SAKURA_FULL_WINDOWS,
   'sakura-rurino': SAKURA_FULL_WINDOWS,
   'sakura-megumi': SAKURA_FULL_WINDOWS
+};
+
+const HARD_WINDOWS: Record<string, VocalWindow[]> = {
+  original: GROUP_FULL_HARD_WINDOWS,
+  '4nin': [
+    { start: 28.2, end: 50.2, label: 'Aメロ' },
+    { start: 52.0, end: 72.2, label: 'Bメロ' }
+  ],
+  '104': GROUP_FULL_HARD_WINDOWS,
+  '105': GROUP_FULL_HARD_WINDOWS,
+  bgp: GROUP_FULL_HARD_WINDOWS,
+  aikatsu: GROUP_FULL_HARD_WINDOWS,
+  sakura: SAKURA_FULL_HARD_WINDOWS,
+  'sakura-kaho': SAKURA_FULL_HARD_WINDOWS,
+  'sakura-sayaka': SAKURA_FULL_HARD_WINDOWS,
+  'sakura-kozue': SAKURA_FULL_HARD_WINDOWS,
+  'sakura-tsuzuri': SAKURA_FULL_HARD_WINDOWS,
+  'sakura-rurino': SAKURA_FULL_HARD_WINDOWS,
+  'sakura-megumi': SAKURA_FULL_HARD_WINDOWS
 };
 
 const EMPTY_STATS: DbStats = {
@@ -106,13 +144,14 @@ interface BuildRoundArgs {
   pool: Version[];
   rng: () => number;
   approxDuration: number;
+  mode: GameMode;
 }
 
-function buildRound({ pool, rng, approxDuration }: BuildRoundArgs): DbRound {
+function buildRound({ pool, rng, approxDuration, mode }: BuildRoundArgs): DbRound {
   const target = pool[Math.floor(rng() * pool.length)];
   const { name: targetCut } = primaryCut(target);
 
-  const windows = VOCAL_WINDOWS[target.key] ?? [];
+  const windows = (mode === 'normal' ? NORMAL_WINDOWS : HARD_WINDOWS)[target.key] ?? [];
   let startPosition: number;
   let sectionLabel: string | null = null;
   if (windows.length > 0) {
@@ -142,10 +181,12 @@ function buildRound({ pool, rng, approxDuration }: BuildRoundArgs): DbRound {
 
 export function useDreamBelieversGame(approxDuration = 130) {
   const [solosRaw, setIncludeSolos] = useLocalStorage<boolean>('db-solos', true);
+  const [modeRaw, setMode] = useLocalStorage<GameMode>('db-mode', 'normal');
   const [statsRaw, setStats] = useLocalStorage<DbStats>('db-stats', EMPTY_STATS);
   const [round, setRound] = useState<DbRound | null>(null);
 
   const includeSolos = solosRaw ?? true;
+  const mode: GameMode = modeRaw === 'hard' ? 'hard' : 'normal';
   const stats: DbStats = statsRaw ?? EMPTY_STATS;
 
   // ONE pool of every version. Each version plays its own primary cut (full if
@@ -158,9 +199,9 @@ export function useDreamBelieversGame(approxDuration = 130) {
       const rng = daily
         ? mulberry32(hashStr(`${todaySeed()}`))
         : mulberry32((Math.floor(performance.now()) ^ 0x9e3779b9) >>> 0);
-      setRound(buildRound({ pool, rng, approxDuration }));
+      setRound(buildRound({ pool, rng, approxDuration, mode }));
     },
-    [pool, approxDuration]
+    [pool, approxDuration, mode]
   );
 
   const recordResult = useCallback(
@@ -232,6 +273,8 @@ export function useDreamBelieversGame(approxDuration = 130) {
   return {
     includeSolos,
     setIncludeSolos,
+    mode,
+    setMode,
     pool,
     activeVersions,
     activeCut,

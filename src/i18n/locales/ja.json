@@ -1,6 +1,6 @@
 {
-  "title": "Dream Believers 推測ゲーム",
-  "defaultTitlePrefix": "Dream Believers 推測ゲーム",
+  "title": "Dream Believers",
+  "defaultTitlePrefix": "Dream Believers",
   "description": "再生中の「Dream Believers」がどのバージョンか当てて、全バージョンを同じ位置から聴き比べよう。",
   "site_name": "Dream Believers 推測ゲーム",
   "seiyuu": "声優",
@@ -320,8 +320,8 @@
     "showingResults": "{{count}}件を表示"
   },
   "dreamBelievers": {
-    "metaTitle": "Dream Believers 推測ゲーム",
-    "title": "Dream Believers 推測ゲーム",
+    "metaTitle": "Dream Believers",
+    "title": "Dream Believers",
     "subtitle": "蓮ノ空の {{song}} をランダムな位置から再生。どのバージョンか当てて、全バージョンを同期で聴き比べよう。",
     "roundSet": "出題セット",
     "includeSolos": "ソロバージョンを含める",
@@ -332,9 +332,13 @@
     },
     "playEndless": "プレイ",
     "playDaily": "デイリー",
-    "listenFull": "フルで聴く",
+    "listenFull": "フル尺",
     "closeFullListen": "閉じる",
-    "fullListenTitle": "フル尺リスナー",
+    "fullListenTitle": "フル尺",
+    "mode": {
+      "normal": "ノーマル",
+      "hard": "ハード"
+    },
     "whichVersion": "どのバージョン？",
     "skip": "スキップ",
     "wrongToast": "ちがうみたい",
@@ -376,7 +380,8 @@
     "whatIsThis": "「Dream Believers」は蓮ノ空のテーマ曲。期別・全体・ソロなど多数のバージョンがあります。",
     "fineTune": "オフセットを微調整",
     "listenAll": "聴き比べ",
-    "compareHint": "出題で流れた同じ秒数・同じ位置を、全バージョンで聴き比べ。",
+    "soundboard": "クリップ比較",
+    "compareHint": "各バージョンのボタンで、出題と同じクリップだけを再生。",
     "questionClip": "出題クリップ（{{seconds}}秒）",
     "chooseSection": "セクションを選ぶ",
     "shareText": "Dream Believers 推測 {{n}}/{{max}}",
