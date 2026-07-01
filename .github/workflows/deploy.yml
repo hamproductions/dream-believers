@@ -22,6 +22,8 @@ jobs:
       - name: Build
         run: PUBLIC_ENV__BASE_URL=/dream-believers/ bun run ci:build
       - name: Deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           cd dist/client
           git init
