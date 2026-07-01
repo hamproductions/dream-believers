@@ -151,25 +151,30 @@ export class SyncedVersionPlayer {
     return Math.min(Math.max(p, 0), this.duration());
   }
 
+  // Decode one track at a time, active first, emitting after each so the UI can
+  // enable playback the moment the active buffer is ready and light up the rest
+  // as they stream in. Decoding all full songs at once allocates ~100MB each and
+  // freezes the main thread — the whole point of the loading state is defeated.
   async load(tracks: SyncedTrack[], order: string[]): Promise<void> {
-    const ctx = this.ctx();
-    await Promise.all(
-      tracks.map(async (t) => {
-        if (this.tracks.has(t.key)) return;
-        const buffer = await decodeClip(t.url);
-        const gain = ctx.createGain();
-        gain.gain.value = 0;
-        gain.connect(this.masterNode());
-        this.tracks.set(t.key, {
-          key: t.key,
-          buffer,
-          offsetSec: t.offsetMs / 1000,
-          gain,
-          source: null
-        });
-      })
-    );
-    if (!this.activeKey) this.activeKey = order.find((k) => this.tracks.has(k)) ?? '';
+    this.ctx();
+    if (!this.activeKey) this.activeKey = order.find((k) => tracks.some((t) => t.key === k)) ?? '';
+    const first = tracks.filter((t) => t.key === this.activeKey);
+    const rest = tracks.filter((t) => t.key !== this.activeKey);
+    for (const t of [...first, ...rest]) {
+      if (this.tracks.has(t.key)) continue;
+      const buffer = await decodeClip(t.url);
+      const gain = this.ctx().createGain();
+      gain.gain.value = 0;
+      gain.connect(this.masterNode());
+      this.tracks.set(t.key, {
+        key: t.key,
+        buffer,
+        offsetSec: t.offsetMs / 1000,
+        gain,
+        source: null
+      });
+      this.emit();
+    }
     this.emit();
   }
 
