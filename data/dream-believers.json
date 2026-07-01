@@ -1,0 +1,290 @@
+{
+  "song": {
+    "id": "502",
+    "name": "Dream Believers",
+    "enName": "Dream Believers"
+  },
+  "syncGroups": {
+    "standard": {
+      "ja": "通常アレンジ",
+      "en": "Standard arrangement"
+    },
+    "sakura": {
+      "ja": "SAKURA（バラード）",
+      "en": "SAKURA (ballad)"
+    }
+  },
+  "versions": [
+    {
+      "key": "original",
+      "label": {
+        "ja": "103期 Ver.",
+        "en": "103rd Ver."
+      },
+      "kind": "group",
+      "gen": "102・103期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "103112",
+        "external": false,
+        "offsetMs": 0.0
+      },
+      "full": {
+        "audio": "db-full-original",
+        "external": true,
+        "offsetMs": 0.0
+      },
+      "jacket": "original"
+    },
+    {
+      "key": "4nin",
+      "label": {
+        "ja": "4人 Ver.",
+        "en": "4-Member Ver."
+      },
+      "kind": "group",
+      "gen": "102・103期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "103101",
+        "external": false,
+        "offsetMs": -0.0
+      },
+      "full": null,
+      "jacket": "103101"
+    },
+    {
+      "key": "104",
+      "label": {
+        "ja": "104期 Ver.",
+        "en": "104th Ver."
+      },
+      "kind": "group",
+      "gen": "102〜104期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "104101",
+        "external": false,
+        "offsetMs": -0.0
+      },
+      "full": {
+        "audio": "db-full-104",
+        "external": true,
+        "offsetMs": -6.4
+      },
+      "jacket": "104"
+    },
+    {
+      "key": "105",
+      "label": {
+        "ja": "105期 Ver.",
+        "en": "105th Ver."
+      },
+      "kind": "group",
+      "gen": "103〜105期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "105101",
+        "external": false,
+        "offsetMs": 2.7
+      },
+      "full": {
+        "audio": "db-full-105",
+        "external": true,
+        "offsetMs": 40.0
+      },
+      "jacket": "105"
+    },
+    {
+      "key": "bgp",
+      "label": {
+        "ja": "B.G.P. Ver.",
+        "en": "B.G.P. Ver."
+      },
+      "kind": "group",
+      "gen": "102〜105期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "405141",
+        "external": true,
+        "offsetMs": 2.7
+      },
+      "full": {
+        "audio": "db-full-bgp",
+        "external": true,
+        "offsetMs": 1.4
+      },
+      "jacket": "bgp"
+    },
+    {
+      "key": "aikatsu",
+      "label": {
+        "ja": "Aikatsu! カバー",
+        "en": "Aikatsu! Cover"
+      },
+      "kind": "group",
+      "gen": "コラボ",
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-full-aikatsu",
+        "external": true,
+        "offsetMs": -7844.9
+      },
+      "jacket": "aikatsu"
+    },
+    {
+      "key": "sakura",
+      "label": {
+        "ja": "SAKURA Ver.",
+        "en": "SAKURA Ver."
+      },
+      "kind": "group",
+      "gen": "102〜104期",
+      "syncGroup": "standard",
+      "short": {
+        "audio": "104119",
+        "external": false,
+        "offsetMs": -1.9
+      },
+      "full": {
+        "audio": "db-full-sakura",
+        "external": true,
+        "offsetMs": -0.0
+      },
+      "jacket": "sakura"
+    },
+    {
+      "key": "sakura-kaho",
+      "label": {
+        "ja": "SAKURA Ver. (花帆)",
+        "en": "SAKURA Ver. (Kaho)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "59",
+        "ja": "日野下花帆",
+        "en": "Kaho Hinoshita",
+        "color": "#f8b500"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-kaho",
+        "external": true,
+        "offsetMs": -6.4
+      },
+      "jacket": "sakura-kaho"
+    },
+    {
+      "key": "sakura-sayaka",
+      "label": {
+        "ja": "SAKURA Ver. (さやか)",
+        "en": "SAKURA Ver. (Sayaka)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "60",
+        "ja": "村野さやか",
+        "en": "Sayaka Murano",
+        "color": "#5383c3"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-sayaka",
+        "external": true,
+        "offsetMs": -6.4
+      },
+      "jacket": "sakura-sayaka"
+    },
+    {
+      "key": "sakura-kozue",
+      "label": {
+        "ja": "SAKURA Ver. (梢)",
+        "en": "SAKURA Ver. (Kozue)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "61",
+        "ja": "乙宗 梢",
+        "en": "Kozue Otomune",
+        "color": "#68be8d"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-kozue",
+        "external": true,
+        "offsetMs": 11.6
+      },
+      "jacket": "sakura-kozue"
+    },
+    {
+      "key": "sakura-tsuzuri",
+      "label": {
+        "ja": "SAKURA Ver. (綴理)",
+        "en": "SAKURA Ver. (Tsuzuri)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "62",
+        "ja": "夕霧綴理",
+        "en": "Tsuzuri Yugiri",
+        "color": "#ba2636"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-tsuzuri",
+        "external": true,
+        "offsetMs": 6.6
+      },
+      "jacket": "sakura-tsuzuri"
+    },
+    {
+      "key": "sakura-rurino",
+      "label": {
+        "ja": "SAKURA Ver. (瑠璃乃)",
+        "en": "SAKURA Ver. (Rurino)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "63",
+        "ja": "大沢瑠璃乃",
+        "en": "Rurino Osawa",
+        "color": "#e7609e"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-rurino",
+        "external": true,
+        "offsetMs": 5.2
+      },
+      "jacket": "sakura-rurino"
+    },
+    {
+      "key": "sakura-megumi",
+      "label": {
+        "ja": "SAKURA Ver. (慈)",
+        "en": "SAKURA Ver. (Megumi)"
+      },
+      "kind": "solo",
+      "member": {
+        "id": "64",
+        "ja": "藤島 慈",
+        "en": "Megumi Fujishima",
+        "color": "#c8c2c6"
+      },
+      "syncGroup": "standard",
+      "short": null,
+      "full": {
+        "audio": "db-solo-megumi",
+        "external": true,
+        "offsetMs": 0.1
+      },
+      "jacket": "sakura-megumi"
+    }
+  ]
+}

@@ -1,0 +1,470 @@
+@layer reset, base, tokens, recipes, utilities;
+
+html {
+  scroll-snap-type: y proximity;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Soft halo so bare text stays legible as bright petals drift behind it. */
+.db-legible {
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.5);
+}
+.dark .db-legible {
+  text-shadow: 0 2px 14px rgba(18, 6, 20, 0.6);
+}
+
+body {
+  font-family: 'Outfit', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  color: #5a2f49;
+  /* 昼桜 — the jacket's sky-to-blossom: blue-lavender sky up top, sakura below */
+  background:
+    radial-gradient(1100px 620px at 80% -10%, rgba(139, 164, 235, 0.4), transparent 60%),
+    radial-gradient(1000px 560px at 12% -8%, rgba(197, 165, 255, 0.44), transparent 58%),
+    radial-gradient(1200px 720px at 50% 116%, rgba(255, 176, 214, 0.62), transparent 60%),
+    linear-gradient(180deg, #eef2ff 0%, #fbeaf5 50%, #ffe1ee 100%);
+  background-attachment: fixed;
+}
+
+/* 夜桜 — warm night stage: rose-wine hall, magenta spotlight glow from above */
+.dark body {
+  color: #ffeef7;
+  background:
+    radial-gradient(760px 520px at 50% -8%, rgba(255, 190, 224, 0.34), transparent 60%),
+    radial-gradient(1000px 560px at 82% 6%, rgba(255, 140, 190, 0.24), transparent 60%),
+    radial-gradient(1050px 600px at 14% 2%, rgba(200, 120, 200, 0.24), transparent 60%),
+    radial-gradient(1000px 560px at 50% 116%, rgba(255, 120, 170, 0.22), transparent 60%),
+    linear-gradient(180deg, #2a1024 0%, #35132c 46%, #24122a 100%);
+  background-attachment: fixed;
+}
+.dark .petal {
+  background: radial-gradient(circle at 30% 30%, #ffdcee 0%, #ff9ecb 42%, #ff6fb2 100%);
+  filter: drop-shadow(0 0 6px rgba(255, 145, 205, 0.6));
+  opacity: 0.95;
+}
+
+:focus-visible {
+  outline: 2px solid #e85a97;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Atmospheric backdrop: a big blurred jacket wash + soft drifting glow orbs so
+   the gutters carry the song's own colors instead of sitting empty. */
+.db-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.db-backdrop img {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: 150vw;
+  height: 150vh;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  filter: blur(90px) saturate(1.25);
+  opacity: 0.3;
+}
+.dark .db-backdrop img {
+  filter: blur(96px) saturate(1.1) brightness(0.7);
+  opacity: 0.24;
+}
+.db-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: 0.5;
+  animation: db-float 9s ease-in-out infinite;
+}
+.db-orb-1 {
+  top: 24%;
+  left: 8%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 158, 205, 0.6), transparent 70%);
+}
+.db-orb-2 {
+  top: 46%;
+  right: 6%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(198, 168, 255, 0.5), transparent 70%);
+  animation-delay: -3s;
+}
+.db-orb-3 {
+  bottom: 8%;
+  left: 40%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 196, 224, 0.5), transparent 70%);
+  animation-delay: -6s;
+}
+.dark .db-orb {
+  opacity: 0.4;
+}
+.dark .db-orb-2 {
+  background: radial-gradient(circle, rgba(146, 108, 224, 0.5), transparent 70%);
+}
+
+/* ── Game stage: glass HUD, vinyl record, progress ring, petal meter ── */
+.db-glass {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 26px 70px -30px rgba(200, 60, 120, 0.5);
+}
+.dark .db-glass {
+  background: rgba(42, 28, 62, 0.66);
+  border-color: rgba(255, 205, 235, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 30px 80px -32px rgba(0, 0, 0, 0.65);
+}
+
+/* Dreamy light bloom behind the record — the jacket's glow */
+.db-bloom {
+  position: absolute;
+  inset: -34%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 214, 236, 0.9), transparent 55%),
+    radial-gradient(circle at 62% 60%, rgba(197, 165, 255, 0.6), transparent 60%),
+    radial-gradient(circle at 38% 64%, rgba(139, 180, 255, 0.5), transparent 60%);
+  filter: blur(30px);
+  animation: db-breathe 6s ease-in-out infinite;
+}
+.dark .db-bloom {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 176, 220, 0.6), transparent 55%),
+    radial-gradient(circle at 62% 60%, rgba(146, 108, 224, 0.55), transparent 60%),
+    radial-gradient(circle at 38% 64%, rgba(90, 120, 220, 0.4), transparent 60%);
+}
+@keyframes db-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+.db-disc {
+  position: relative;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at center, rgba(0, 0, 0, 0.16) 0 2px, rgba(0, 0, 0, 0.04) 2px 4px),
+    radial-gradient(circle at 38% 32%, #3b2c44, #130c1a 78%);
+  box-shadow:
+    0 34px 80px -26px rgba(180, 50, 110, 0.6),
+    inset 0 0 46px rgba(0, 0, 0, 0.55);
+}
+.db-disc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.18) 46%, transparent 60%);
+}
+.db-disc-label {
+  position: absolute;
+  inset: 19%;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.16);
+}
+.db-disc-label img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.db-disc-mystery {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Great Vibes', cursive;
+  font-size: 3.4rem;
+  color: rgba(255, 255, 255, 0.92);
+  background: radial-gradient(circle at 40% 34%, #ffd6ec 0%, #ff9ec6 52%, #db6bad 100%);
+  text-shadow: 0 2px 10px rgba(190, 50, 110, 0.5);
+}
+.db-disc-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7%;
+  height: 7%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #0e0a12;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+  z-index: 3;
+}
+@keyframes db-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.db-spin {
+  animation: db-spin 9s linear infinite;
+}
+.db-spin[data-paused='true'] {
+  animation-play-state: paused;
+}
+.db-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(var(--rc, #ff9ec6) calc(var(--p, 0) * 1turn), rgba(255, 255, 255, 0.14) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 7px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 7px));
+  pointer-events: none;
+}
+
+.db-meter-petal {
+  width: 22px;
+  height: 22px;
+  border-radius: 100% 0 100% 0;
+  transition:
+    background 0.3s,
+    transform 0.3s,
+    opacity 0.3s;
+}
+
+/* Falling sakura petals */
+.sakura-field {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.petal {
+  position: absolute;
+  top: -6vh;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle at 30% 30%, #fff0f7 0%, #ffb4d6 48%, #ff8fbf 100%);
+  border-radius: 100% 0 100% 0;
+  opacity: 0.9;
+  filter: drop-shadow(0 2px 6px rgba(255, 140, 195, 0.55));
+  animation: petal-fall linear infinite;
+}
+@keyframes petal-fall {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--pop, 0.85);
+  }
+  50% {
+    transform: translateY(50vh) translateX(var(--sway, 6vw))
+      rotate(calc(var(--spin, 360deg) * 0.5));
+  }
+  90% {
+    opacity: var(--pop, 0.85);
+  }
+  100% {
+    transform: translateY(112vh) translateX(calc(var(--sway, 6vw) * -0.55))
+      rotate(var(--spin, 360deg));
+    opacity: 0;
+  }
+}
+
+@keyframes db-cascade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes db-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes db-float {
+  0%,
+  100% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+@keyframes db-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+@keyframes db-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) scale(1) rotate(220deg);
+    opacity: 0;
+  }
+}
+.db-burst-petal {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: 13px;
+  height: 13px;
+  border-radius: 100% 0 100% 0;
+  pointer-events: none;
+  z-index: 4;
+  animation: db-burst 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes db-moment-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+.db-moment {
+  animation: db-moment-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes db-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-9px) rotate(-1.5deg);
+  }
+  30% {
+    transform: translateX(8px) rotate(1.5deg);
+  }
+  45% {
+    transform: translateX(-6px) rotate(-1deg);
+  }
+  60% {
+    transform: translateX(5px) rotate(1deg);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+.db-shake {
+  animation: db-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes db-wrong-flash {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 60, 90, 0);
+  }
+  25% {
+    box-shadow: 0 0 0 2px rgba(224, 60, 90, 0.9);
+    background: rgba(224, 60, 90, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 60, 90, 0);
+  }
+}
+.db-wrong-flash {
+  animation:
+    db-wrong-flash 0.6s ease-out,
+    db-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes db-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 90, 151, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 22px 4px rgba(232, 90, 151, 0.28);
+  }
+}
+
+.db-cascade {
+  opacity: 0;
+  animation: db-cascade 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.db-pop {
+  animation: db-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.db-float {
+  animation: db-float 4s ease-in-out infinite;
+}
+.db-glow {
+  animation: db-glow 2.4s ease-in-out infinite;
+}
+.db-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    rgba(232, 90, 151, 0) 0%,
+    rgba(232, 90, 151, 0.32) 50%,
+    rgba(232, 90, 151, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: db-shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .db-cascade,
+  .db-pop,
+  .db-float,
+  .db-shimmer,
+  .db-glow,
+  .db-spin,
+  .db-breathe,
+  .db-bloom {
+    animation: none;
+    opacity: 1;
+  }
+  /* Respect reduced-motion: stop the petal field entirely. */
+  .petal {
+    animation: none !important;
+    display: none;
+  }
+  /* Keep the wrong-guess signal, but as a color flash only — no shake. */
+  .db-shake {
+    animation: none;
+  }
+  .db-wrong-flash {
+    animation: db-wrong-flash 0.6s ease-out;
+  }
+}

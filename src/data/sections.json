@@ -1,0 +1,44 @@
+{
+  "standard:short": {
+    "offsets": { "original": 0, "4nin": 0, "104": 0, "105": 2.7, "bgp": 2.7 },
+    "sections": [
+      { "t": 0, "label": "イントロ" },
+      { "t": 27.64, "label": "Aメロ" },
+      { "t": 51.68, "label": "Bメロ" },
+      { "t": 74.84, "label": "間奏" },
+      { "t": 105.19, "label": "アウトロ" }
+    ]
+  },
+  "standard:full": {
+    "offsets": { "original": 0, "104": -6.4, "105": 40, "bgp": 1.4, "aikatsu": 0 },
+    "sections": [
+      { "t": 0, "label": "イントロ" },
+      { "t": 25.19, "label": "Aメロ" },
+      { "t": 49.91, "label": "Bメロ" },
+      { "t": 73.66, "label": "サビ" },
+      { "t": 100.94, "label": "間奏" },
+      { "t": 110.89, "label": "Aメロ2" },
+      { "t": 135.6, "label": "Bメロ2" },
+      { "t": 159.35, "label": "サビ2" },
+      { "t": 189.2, "label": "Cメロ" },
+      { "t": 228.04, "label": "大サビ" },
+      { "t": 280.67, "label": "アウトロ" }
+    ]
+  },
+  "sakura:full": {
+    "offsets": { "sakura": 0, "sakura-kozue": 11.6, "sakura-tsuzuri": 6.6, "sakura-megumi": 0.2 },
+    "sections": [
+      { "t": 0, "label": "イントロ" },
+      { "t": 25.19, "label": "Aメロ" },
+      { "t": 48.3, "label": "Bメロ" },
+      { "t": 71.09, "label": "サビ" },
+      { "t": 98.69, "label": "間奏" },
+      { "t": 109.93, "label": "Aメロ2" },
+      { "t": 133.04, "label": "Bメロ2" },
+      { "t": 155.18, "label": "サビ2" },
+      { "t": 185.99, "label": "Cメロ" },
+      { "t": 225.47, "label": "大サビ" },
+      { "t": 275.22, "label": "アウトロ" }
+    ]
+  }
+}

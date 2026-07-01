@@ -1,0 +1,62 @@
+{
+  "103112": {
+    "start": 114.0,
+    "end": 128.0
+  },
+  "103101": {
+    "start": 114.0,
+    "end": 128.0
+  },
+  "104101": {
+    "start": 89.15,
+    "end": 103.15
+  },
+  "105101": {
+    "start": 89.2,
+    "end": 103.2
+  },
+  "405141": {
+    "start": 89.15,
+    "end": 103.15
+  },
+  "db-full-original": {
+    "start": 210.1,
+    "end": 224.1
+  },
+  "db-full-104": {
+    "start": 264.45,
+    "end": 278.45
+  },
+  "db-full-105": {
+    "start": 209.0,
+    "end": 223.0
+  },
+  "db-full-bgp": {
+    "start": 264.25,
+    "end": 278.25
+  },
+  "db-full-aikatsu": {
+    "start": 212.65,
+    "end": 226.65
+  },
+  "104119": {
+    "start": 125.5,
+    "end": 139.5
+  },
+  "db-full-sakura": {
+    "start": 209.6,
+    "end": 223.6
+  },
+  "db-solo-kozue": {
+    "start": 264.3,
+    "end": 278.3
+  },
+  "db-solo-tsuzuri": {
+    "start": 263.5,
+    "end": 277.5
+  },
+  "db-solo-megumi": {
+    "start": 264.45,
+    "end": 278.45
+  }
+}
