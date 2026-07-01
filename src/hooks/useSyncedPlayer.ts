@@ -4,7 +4,10 @@ import {
   type SyncedPlayerState,
   type SyncedTrack
 } from '~/utils/dream-believers/SyncedVersionPlayer';
+import { StreamingVersionPlayer } from '~/utils/dream-believers/StreamingVersionPlayer';
 import { analyserBus } from '~/utils/dream-believers/analyserBus';
+
+type Engine = SyncedVersionPlayer | StreamingVersionPlayer;
 
 const EMPTY: SyncedPlayerState = {
   playing: false,
@@ -12,11 +15,17 @@ const EMPTY: SyncedPlayerState = {
   duration: 0,
   activeKey: '',
   loadedKeys: [],
-  availableKeys: []
+  availableKeys: [],
+  pendingKey: ''
 };
 
-export function useSyncedPlayer(tracks: SyncedTrack[], order: string[], activeKey: string) {
-  const playerRef = useRef<SyncedVersionPlayer | null>(null);
+export function useSyncedPlayer(
+  tracks: SyncedTrack[],
+  order: string[],
+  activeKey: string,
+  engine: 'buffer' | 'stream' = 'buffer'
+) {
+  const playerRef = useRef<Engine | null>(null);
   const [state, setState] = useState<SyncedPlayerState>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -24,7 +33,8 @@ export function useSyncedPlayer(tracks: SyncedTrack[], order: string[], activeKe
   const tracksKey = tracks.map((t) => `${t.key}:${t.url}`).join('|');
 
   useEffect(() => {
-    const player = new SyncedVersionPlayer();
+    const player: Engine =
+      engine === 'stream' ? new StreamingVersionPlayer() : new SyncedVersionPlayer();
     playerRef.current = player;
     const unsub = player.subscribe(setState);
     let cancelled = false;

@@ -12,6 +12,8 @@ const LLLL_MP3 = '/Users/vittayapalotai.tanyawat/code/llll/data/music/mp3';
 
 interface Cut {
   audio: string;
+  offsetMs?: number;
+  rate?: number;
   src:
     | { kind: 'llll-mp3'; soundId: number }
     | { kind: 'local-file'; path: string }
@@ -100,6 +102,9 @@ const VERSIONS: Version[] = [
     syncGroup: 'standard',
     full: {
       audio: 'db-full-aikatsu',
+      // Cover runs ~2% faster than the standard arrangement; slow onto the shared timeline.
+      offsetMs: 50,
+      rate: 0.9804,
       src: wikia(
         'c/c5/Dream_Believers_%28Aikatsu%21_Cover%29.ogg/revision/latest?cb=20251228103758'
       )

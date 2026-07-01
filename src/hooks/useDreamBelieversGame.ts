@@ -9,7 +9,7 @@ import {
   type Version
 } from '~/utils/dream-believers/data';
 
-export const REVEAL_STEPS = [1, 2, 4, 7, 11] as const;
+export const REVEAL_STEPS = [1, 3, 6] as const;
 export const MAX_ATTEMPTS = REVEAL_STEPS.length;
 export type GameMode = 'normal' | 'hard';
 

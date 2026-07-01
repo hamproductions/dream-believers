@@ -12,6 +12,16 @@ type Tr = (k: string, v?: Record<string, string | number>) => string;
 
 const ACCENT = '#e85a97';
 
+// Standard-arrangement beat grid (161.5 BPM). Seeks snap to the nearest beat so
+// jumps land tight instead of mid-phrase.
+const BEAT = 60 / 161.5;
+const BEAT_PHASE = 0.06;
+// Game-size (short) edits align to the full timeline shifted by +2.032s.
+const SHORT_TO_FULL_MS = 2032;
+function snapBeat(p: number): number {
+  return Math.max(0, BEAT_PHASE + Math.round((p - BEAT_PHASE) / BEAT) * BEAT);
+}
+
 function fmt(s: number): string {
   if (!Number.isFinite(s) || s < 0) s = 0;
   const m = Math.floor(s / 60);
@@ -20,15 +30,19 @@ function fmt(s: number): string {
 }
 
 export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExit: () => void }) {
-  const fullVersions = useMemo(() => dbVersions.filter((v) => v.full), []);
+  const versions = useMemo(() => dbVersions.filter((v) => v.full ?? v.short), []);
   const tracks = useMemo(
     () =>
-      fullVersions.map((v) => ({
-        key: v.key,
-        url: cutUrl(v.full!),
-        offsetMs: v.full!.offsetMs
-      })),
-    [fullVersions]
+      versions.map((v) => {
+        const c = v.full ?? v.short!;
+        // A version with only the game-size cut (4-Member) is a radio edit of the
+        // same recording: its first segment matches the full timeline shifted by
+        // +2.032s. Place it there so it plays aligned; it auto-advances when the
+        // edit runs out. Full cuts keep their own offset.
+        const offsetMs = v.full ? c.offsetMs : c.offsetMs + SHORT_TO_FULL_MS;
+        return { key: v.key, url: cutUrl(c), offsetMs, rate: c.rate };
+      }),
+    [versions]
   );
   const order = useMemo(() => tracks.map((tk) => tk.key), [tracks]);
 
@@ -36,7 +50,8 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
   const { state, error, toggle, seek, switchTo, setVolume } = useSyncedPlayer(
     tracks,
     order,
-    activeKey
+    activeKey,
+    'stream'
   );
 
   const [volume, setStoredVolume] = useLocalStorage<number>('db-volume', 0.8);
@@ -45,14 +60,16 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
     setVolume(vol);
   }, [setVolume, vol, state.loadedKeys.length]);
 
-  const activeVersion = fullVersions.find((v) => v.key === state.activeKey) ?? fullVersions[0];
+  const activeVersion = versions.find((v) => v.key === state.activeKey) ?? versions[0];
   const activeColor = activeVersion?.member?.color ?? ACCENT;
   const duration = state.duration || 1;
   const available = useMemo(() => new Set(state.availableKeys), [state.availableKeys]);
   const loaded = useMemo(() => new Set(state.loadedKeys), [state.loadedKeys]);
 
-  const allLoaded = loaded.size >= tracks.length;
-  const ready = !error && allLoaded;
+  // Tracks decode on demand (bounded memory), so "ready" means the active track
+  // is decoded — not all of them. A cold version decodes when picked.
+  const ready = !error && loaded.size > 0;
+  const activeReady = loaded.has(state.activeKey);
 
   const sections = useMemo(() => {
     const cluster = state.activeKey.startsWith('sakura') ? 'sakura:full' : 'standard:full';
@@ -67,17 +84,26 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
     [switchTo]
   );
 
+  // Player only: when the active track runs out (e.g. the shorter 4-Member cut
+  // ends mid-timeline), roll onto the next still-playing version instead of going
+  // silent. The reveal soundboard doesn't do this — it just disables the chip.
+  useEffect(() => {
+    if (!state.playing || !loaded.has(state.activeKey) || available.has(state.activeKey)) return;
+    const next = order.find((k) => k !== state.activeKey && available.has(k));
+    if (next) onPick(next);
+  }, [state.playing, state.activeKey, available, loaded, order, onPick]);
+
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
       const pct = (e.clientX - rect.left) / rect.width;
-      seek(Math.min(Math.max(pct * duration, 0), duration));
+      seek(snapBeat(Math.min(Math.max(pct * duration, 0), duration)));
     },
     [seek, duration]
   );
 
   const posPct = Math.min(Math.max((state.position / duration) * 100, 0), 100);
-  const activeUnavailable = ready && !available.has(state.activeKey);
+  const activeUnavailable = activeReady && !available.has(state.activeKey);
 
   return (
     <Stack
@@ -153,8 +179,8 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
         <Box h="1.2em" color={activeUnavailable ? '#d96b7a' : 'fg.subtle'} fontSize="xs">
           {error
             ? t('audioError')
-            : !ready
-              ? `${loaded.size} / ${tracks.length}`
+            : !activeReady
+              ? t('loadingAudio')
               : activeUnavailable
                 ? t('versionUnavailableHere')
                 : `${fmt(state.position)} / ${fmt(duration)}`}
@@ -228,7 +254,7 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
                   key={`${sec.label}-${sec.t}`}
                   type="button"
                   disabled={!ready}
-                  onClick={() => seek(sec.t)}
+                  onClick={() => seek(snapBeat(sec.t))}
                   className={`db-glass ${css({
                     cursor: 'pointer',
                     borderRadius: 'full',
@@ -251,11 +277,14 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
 
           <Stack gap="2" w="full">
             <Grid gap="2" gridTemplateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)' }}>
-              {fullVersions.map((v, i) => {
+              {versions.map((v, i) => {
                 const active = v.key === state.activeKey;
                 const isLoaded = loaded.has(v.key);
                 const canPlayHere = available.has(v.key);
-                const disabled = !isLoaded || !canPlayHere;
+                // Cold tracks are tappable (they decode on pick); only a decoded
+                // track that has no audio at the current playhead is disabled.
+                const disabled = isLoaded && !canPlayHere;
+                const decoding = v.key === state.pendingKey || (active && !isLoaded);
                 const c = v.member?.color ?? ACCENT;
                 return (
                   <button
@@ -265,7 +294,7 @@ export function PlayerMode({ locale, t, onExit }: { locale: Locale; t: Tr; onExi
                     disabled={disabled}
                     title={!canPlayHere && isLoaded ? t('versionUnavailableHere') : undefined}
                     onClick={() => onPick(v.key)}
-                    className={`db-cascade ${!isLoaded ? 'db-shimmer' : ''} ${css({
+                    className={`db-cascade ${decoding ? 'db-shimmer' : ''} ${css({
                       cursor: 'pointer',
                       display: 'flex',
                       position: 'relative',

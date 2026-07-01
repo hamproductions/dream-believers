@@ -27,12 +27,12 @@
       "short": {
         "audio": "103112",
         "external": false,
-        "offsetMs": 0.0
+        "offsetMs": 0
       },
       "full": {
         "audio": "db-full-original",
         "external": true,
-        "offsetMs": 0.0
+        "offsetMs": 0
       },
       "jacket": "original"
     },
@@ -48,7 +48,7 @@
       "short": {
         "audio": "103101",
         "external": false,
-        "offsetMs": -0.0
+        "offsetMs": 0
       },
       "full": null,
       "jacket": "103101"
@@ -65,7 +65,7 @@
       "short": {
         "audio": "104101",
         "external": false,
-        "offsetMs": -0.0
+        "offsetMs": 0
       },
       "full": {
         "audio": "db-full-104",
@@ -91,7 +91,7 @@
       "full": {
         "audio": "db-full-105",
         "external": true,
-        "offsetMs": 40.0
+        "offsetMs": 40
       },
       "jacket": "105"
     },
@@ -129,7 +129,8 @@
       "full": {
         "audio": "db-full-aikatsu",
         "external": true,
-        "offsetMs": -7844.9
+        "offsetMs": 50,
+        "rate": 0.9804
       },
       "jacket": "aikatsu"
     },
@@ -150,7 +151,7 @@
       "full": {
         "audio": "db-full-sakura",
         "external": true,
-        "offsetMs": -0.0
+        "offsetMs": 0
       },
       "jacket": "sakura"
     },

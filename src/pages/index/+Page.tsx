@@ -9,6 +9,7 @@ import { RecordDisc } from '~/components/dream-believers/RecordDisc';
 import { useToaster } from '~/context/ToasterContext';
 import { useDreamBelieversGame } from '~/hooks/useDreamBelieversGame';
 import { useSyncedPlayer } from '~/hooks/useSyncedPlayer';
+import type { SyncedTrack } from '~/utils/dream-believers/SyncedVersionPlayer';
 import {
   cutUrl,
   dbSong,
@@ -217,13 +218,15 @@ export default function Page() {
   const compareStart = done && round ? round.startPosition : 0;
   const compareEnd = done && round ? round.startPosition + game.revealDuration : null;
 
-  const tracks = useMemo(() => {
+  const tracks = useMemo<SyncedTrack[]>(() => {
     return panelVersions
-      .map((v) => {
+      .map((v): SyncedTrack | null => {
         const c = getCut(v, panelCut);
-        return c ? { key: v.key, url: cutUrl(c), offsetMs: offsets[v.key] ?? c.offsetMs } : null;
+        return c
+          ? { key: v.key, url: cutUrl(c), offsetMs: offsets[v.key] ?? c.offsetMs, rate: c.rate }
+          : null;
       })
-      .filter((x): x is { key: string; url: string; offsetMs: number } => x != null);
+      .filter((x): x is SyncedTrack => x != null);
   }, [panelVersions, panelCut, offsets]);
   const order = useMemo(() => tracks.map((t) => t.key), [tracks]);
 

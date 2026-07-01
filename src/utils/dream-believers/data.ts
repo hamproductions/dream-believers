@@ -9,6 +9,9 @@ export interface Cut {
   audio: string;
   external: boolean;
   offsetMs: number;
+  // Tempo correction onto the shared timeline (e.g. the Aikatsu cover runs ~2%
+  // faster). Omitted / 1 means no correction.
+  rate?: number;
 }
 
 export interface Version {
