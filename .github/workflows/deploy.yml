@@ -21,6 +21,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Build
         run: PUBLIC_ENV__BASE_URL=/dream-believers/ bun run ci:build
+      - name: Disable Jekyll
+        run: touch dist/client/.nojekyll
       - name: Deploy
         env:
           GITHUB_TOKEN: ${{ github.token }}
